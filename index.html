@@ -4,157 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>NDX · 20-Year Shock Analysis</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   :root {
-    --bg: #0a0c10;
-    --bg2: #111318;
-    --surface: #1d2129;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.13);
-    --text: #e8eaf0;
-    --text2: #8b92a8;
-    --text3: #555e72;
-    --green: #22c97a;
-    --green-dim: rgba(34,201,122,0.1);
-    --green-border: rgba(34,201,122,0.28);
-    --red: #f04a5a;
-    --red-dim: rgba(240,74,90,0.1);
-    --red-border: rgba(240,74,90,0.28);
-    --accent: #3d9bff;
-    --accent-dim: rgba(61,155,255,0.1);
+    --bg:#0a0c10; --bg2:#111318; --surface:#1d2129;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
+    --text:#e8eaf0; --text2:#8b92a8; --text3:#555e72;
+    --green:#22c97a; --green-dim:rgba(34,201,122,0.1); --green-border:rgba(34,201,122,0.28);
+    --red:#f04a5a; --red-dim:rgba(240,74,90,0.1); --red-border:rgba(240,74,90,0.28);
+    --accent:#3d9bff; --accent-dim:rgba(61,155,255,0.1);
+    --mono:'Courier New',Courier,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-  }
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 0; opacity: 0.4;
-  }
-  .page { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 32px 16px 64px; }
-  @media (min-width: 640px) { .page { padding: 44px 28px 72px; } }
-  @media (min-width: 1024px) { .page { padding: 48px 36px 80px; } }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  .page{max-width:1200px;margin:0 auto;padding:32px 16px 64px}
+  @media(min-width:640px){.page{padding:44px 28px 72px}}
 
   /* HEADER */
-  header { margin-bottom: 32px; }
-  .eyebrow { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 10px; }
-  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 13vw, 96px); line-height: 0.92; letter-spacing: 0.02em; margin-bottom: 14px; }
-  .hero-title span { color: var(--accent); }
-  .header-sub { font-size: clamp(13px, 3.5vw, 15px); color: var(--text2); line-height: 1.65; max-width: 520px; margin-bottom: 24px; }
+  header{margin-bottom:32px}
+  .eyebrow{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}
+  .hero-title{font-family:var(--sans);font-weight:800;font-size:clamp(40px,12vw,88px);line-height:.95;letter-spacing:-.02em;margin-bottom:14px}
+  .hero-title span{color:var(--accent)}
+  .header-sub{font-size:clamp(13px,3.5vw,15px);color:var(--text2);line-height:1.65;max-width:520px;margin-bottom:24px}
 
-  /* KPI GRID */
-  .kpi-strip { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  @media (min-width: 480px) { .kpi-strip { grid-template-columns: repeat(3, 1fr); } }
-  @media (min-width: 768px) { .kpi-strip { grid-template-columns: repeat(6, 1fr); gap: 10px; } }
-  .kpi-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 11px 13px; }
-  .kpi-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; line-height: 1.4; }
-  .kpi-value { font-family: 'DM Mono', monospace; font-size: clamp(14px, 3.5vw, 18px); font-weight: 500; color: var(--text); line-height: 1; }
-  .kpi-value.pos { color: var(--green); }
-  .kpi-value.neg { color: var(--red); }
+  /* KPI */
+  .kpi-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  @media(min-width:480px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
+  @media(min-width:768px){.kpi-strip{grid-template-columns:repeat(6,1fr);gap:10px}}
+  .kpi-card{background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:11px 13px}
+  .kpi-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;line-height:1.4}
+  .kpi-value{font-family:var(--mono);font-size:clamp(14px,3.5vw,18px);font-weight:500;color:var(--text);line-height:1}
+  .kpi-value.pos{color:var(--green)}.kpi-value.neg{color:var(--red)}
 
-  /* CHART SECTION */
-  .chart-section { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 14px; padding: 18px 14px 14px; margin-bottom: 28px; }
-  @media (min-width: 640px) { .chart-section { padding: 22px 22px 16px; } }
-  .chart-header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-  @media (min-width: 540px) { .chart-header { flex-direction: row; justify-content: space-between; align-items: center; } }
-  .chart-title { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2); letter-spacing: 0.07em; text-transform: uppercase; }
-  .legend { display: flex; gap: 12px; font-family: 'DM Mono', monospace; font-size: 10px; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 5px; color: var(--text3); }
-  .legend-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .legend-dot.line { background: var(--accent); }
-  .legend-dot.gain { background: var(--green); }
-  .legend-dot.loss { background: var(--red); }
+  /* CHART */
+  .chart-section{background:var(--bg2);border:.5px solid var(--border);border-radius:14px;padding:18px 14px 14px;margin-bottom:28px}
+  @media(min-width:640px){.chart-section{padding:22px 22px 16px}}
+  .chart-header{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+  @media(min-width:540px){.chart-header{flex-direction:row;justify-content:space-between;align-items:center}}
+  .chart-title{font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:.07em;text-transform:uppercase}
+  .legend{display:flex;gap:12px;font-family:var(--mono);font-size:10px;flex-wrap:wrap}
+  .legend-item{display:flex;align-items:center;gap:5px;color:var(--text3)}
+  .legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .legend-dot.line{background:var(--accent)}.legend-dot.gain{background:var(--green)}.legend-dot.loss{background:var(--red)}
 
-  /* mobile tooltip above chart */
-  .touch-tooltip { display: none; background: var(--surface); border: 0.5px solid var(--border2); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-family: 'DM Mono', monospace; }
-  .touch-tooltip.visible { display: block; }
-  .tt-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-  .tt-date-m { font-size: 11px; color: var(--text3); }
-  .tt-val-m { font-size: 16px; font-weight: 500; color: var(--text); }
-  .tt-chg-m { font-size: 11px; margin-top: 3px; }
-  .tt-chg-m.pos { color: var(--green); }
-  .tt-chg-m.neg { color: var(--red); }
-  .tt-event-m { font-size: 11px; color: var(--accent); margin-top: 6px; line-height: 1.45; border-top: 0.5px solid var(--border); padding-top: 6px; }
+  /* touch tooltip */
+  .touch-tooltip{display:none;background:var(--surface);border:.5px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-family:var(--mono)}
+  .touch-tooltip.visible{display:block}
+  .tt-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .tt-date-m{font-size:11px;color:var(--text3)}
+  .tt-val-m{font-size:16px;font-weight:500;color:var(--text)}
+  .tt-chg-m{font-size:11px;margin-top:3px}
+  .tt-chg-m.pos{color:var(--green)}.tt-chg-m.neg{color:var(--red)}
+  .tt-event-m{font-size:11px;color:var(--accent);margin-top:6px;line-height:1.45;border-top:.5px solid var(--border);padding-top:6px}
 
-  .chart-wrap { position: relative; width: 100%; height: clamp(220px, 44vw, 370px); }
+  .chart-wrap{position:relative;width:100%;height:clamp(220px,44vw,370px)}
+  canvas{display:block;width:100%!important}
 
-  /* desktop hover tooltip */
-  .custom-tooltip { position: absolute; background: var(--surface); border: 0.5px solid var(--border2); border-radius: 10px; padding: 11px 15px; pointer-events: none; opacity: 0; transition: opacity 0.12s; min-width: 195px; max-width: 230px; z-index: 10; font-family: 'DM Mono', monospace; }
-  .tt-date { font-size: 11px; color: var(--text3); margin-bottom: 5px; }
-  .tt-val { font-size: 17px; font-weight: 500; color: var(--text); }
-  .tt-chg { font-size: 12px; margin-top: 3px; }
-  .tt-chg.pos { color: var(--green); }
-  .tt-chg.neg { color: var(--red); }
-  .tt-event { font-size: 11px; color: var(--accent); margin-top: 6px; line-height: 1.4; border-top: 0.5px solid var(--border); padding-top: 6px; }
+  /* desktop tooltip */
+  .custom-tooltip{position:absolute;background:var(--surface);border:.5px solid var(--border2);border-radius:10px;padding:11px 15px;pointer-events:none;opacity:0;transition:opacity .12s;min-width:195px;max-width:230px;z-index:10;font-family:var(--mono)}
+  .tt-date{font-size:11px;color:var(--text3);margin-bottom:5px}
+  .tt-val{font-size:17px;font-weight:500;color:var(--text)}
+  .tt-chg{font-size:12px;margin-top:3px}
+  .tt-chg.pos{color:var(--green)}.tt-chg.neg{color:var(--red)}
+  .tt-event{font-size:11px;color:var(--accent);margin-top:6px;line-height:1.4;border-top:.5px solid var(--border);padding-top:6px}
 
   /* EVENTS */
-  .events-header { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-  @media (min-width: 540px) { .events-header { flex-direction: row; align-items: center; } }
-  .events-title { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; flex: 1; }
-  .tab-group { display: flex; background: var(--surface); border-radius: 8px; padding: 3px; gap: 2px; border: 0.5px solid var(--border); align-self: flex-start; }
-  .tab { font-family: 'DM Mono', monospace; font-size: 10px; padding: 6px 11px; border-radius: 6px; cursor: pointer; color: var(--text3); transition: all 0.15s; border: none; background: transparent; letter-spacing: 0.04em; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
-  .tab.active-gain { background: var(--green-dim); color: var(--green); border: 0.5px solid var(--green-border); }
-  .tab.active-loss { background: var(--red-dim); color: var(--red); border: 0.5px solid var(--red-border); }
-  .tab.active-all { background: var(--accent-dim); color: var(--accent); border: 0.5px solid rgba(61,155,255,0.3); }
+  .events-header{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+  @media(min-width:540px){.events-header{flex-direction:row;align-items:center}}
+  .events-title{font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;flex:1}
+  .tab-group{display:flex;background:var(--surface);border-radius:8px;padding:3px;gap:2px;border:.5px solid var(--border);align-self:flex-start}
+  .tab{font-family:var(--mono);font-size:10px;padding:6px 11px;border-radius:6px;cursor:pointer;color:var(--text3);transition:all .15s;border:none;background:transparent;letter-spacing:.04em;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+  .tab.active-gain{background:var(--green-dim);color:var(--green);border:.5px solid var(--green-border)}
+  .tab.active-loss{background:var(--red-dim);color:var(--red);border:.5px solid var(--red-border)}
+  .tab.active-all{background:var(--accent-dim);color:var(--accent);border:.5px solid rgba(61,155,255,.3)}
 
   /* CARDS */
-  .cards-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-  @media (min-width: 620px) { .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
-
-  .event-card {
-    background: var(--bg2); border: 0.5px solid var(--border); border-radius: 14px;
-    padding: 16px 16px 16px 20px; position: relative; overflow: hidden;
-    transition: all 0.2s; animation: fadeSlide 0.3s ease both;
-    -webkit-tap-highlight-color: transparent;
+  .cards-grid{display:grid;grid-template-columns:1fr;gap:10px}
+  @media(min-width:620px){.cards-grid{grid-template-columns:repeat(2,1fr);gap:12px}}
+  .event-card{background:var(--bg2);border:.5px solid var(--border);border-radius:14px;padding:16px 16px 16px 20px;position:relative;overflow:hidden;transition:all .2s;animation:fadeSlide .3s ease both;-webkit-tap-highlight-color:transparent}
+  .event-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+  .event-card.gain::before{background:var(--green)}.event-card.loss::before{background:var(--red)}
+  @media(hover:hover){
+    .event-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+    .event-card.gain:hover{background:var(--green-dim);border-color:var(--green-border)}
+    .event-card.loss:hover{background:var(--red-dim);border-color:var(--red-border)}
   }
-  .event-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
-  .event-card.gain::before { background: var(--green); }
-  .event-card.loss::before { background: var(--red); }
-  @media (hover: hover) {
-    .event-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-    .event-card.gain:hover { background: var(--green-dim); border-color: var(--green-border); }
-    .event-card.loss:hover { background: var(--red-dim); border-color: var(--red-border); }
-  }
-  @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-  .card-rank { font-family: 'Bebas Neue', sans-serif; font-size: 50px; position: absolute; right: 12px; top: 6px; opacity: 0.07; line-height: 1; pointer-events: none; }
-  .card-rank.gain { color: var(--green); }
-  .card-rank.loss { color: var(--red); }
-  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
-  .card-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.05em; }
-  .card-era { display: inline-block; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
-  .card-era.gain { background: var(--green-dim); color: var(--green); border: 0.5px solid var(--green-border); }
-  .card-era.loss { background: var(--red-dim); color: var(--red); border: 0.5px solid var(--red-border); }
-  .card-move { font-family: 'DM Mono', monospace; font-size: clamp(22px, 5.5vw, 28px); font-weight: 500; line-height: 1; margin-bottom: 3px; }
-  .card-move.gain { color: var(--green); }
-  .card-move.loss { color: var(--red); }
-  .card-pts { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text2); margin-bottom: 9px; }
-  .card-catalyst { font-size: clamp(12px, 3.3vw, 14px); font-weight: 500; color: var(--text); margin-bottom: 6px; line-height: 1.45; padding-right: 28px; }
-  .card-detail { font-size: clamp(11px, 2.8vw, 13px); color: var(--text2); line-height: 1.65; }
+  @keyframes fadeSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .card-rank{font-weight:800;font-size:50px;position:absolute;right:12px;top:6px;opacity:.07;line-height:1;pointer-events:none}
+  .card-rank.gain{color:var(--green)}.card-rank.loss{color:var(--red)}
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px}
+  .card-date{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.05em}
+  .card-era{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+  .card-era.gain{background:var(--green-dim);color:var(--green);border:.5px solid var(--green-border)}
+  .card-era.loss{background:var(--red-dim);color:var(--red);border:.5px solid var(--red-border)}
+  .card-move{font-family:var(--mono);font-size:clamp(22px,5.5vw,28px);font-weight:500;line-height:1;margin-bottom:3px}
+  .card-move.gain{color:var(--green)}.card-move.loss{color:var(--red)}
+  .card-pts{font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:9px}
+  .card-catalyst{font-size:clamp(12px,3.3vw,14px);font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.45;padding-right:28px}
+  .card-detail{font-size:clamp(11px,2.8vw,13px);color:var(--text2);line-height:1.65}
 
   /* FOOTER */
-  footer { margin-top: 52px; padding-top: 20px; border-top: 0.5px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
-  @media (min-width: 540px) { footer { flex-direction: row; justify-content: space-between; align-items: center; } }
-  .footer-txt { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 0.05em; }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--surface); border-radius: 2px; }
+  footer{margin-top:52px;padding-top:20px;border-top:.5px solid var(--border);display:flex;flex-direction:column;gap:5px}
+  @media(min-width:540px){footer{flex-direction:row;justify-content:space-between;align-items:center}}
+  .footer-txt{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.05em}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--surface);border-radius:2px}
 </style>
 </head>
 <body>
 <div class="page">
-
   <header>
     <div class="eyebrow">Nasdaq-100 · NDX · 2005 – 2026</div>
     <div class="hero-title">20 YEARS<br>OF <span>SHOCK</span></div>
@@ -184,7 +142,7 @@
       <div class="tt-event-m" id="ttEventM" style="display:none"></div>
     </div>
     <div class="chart-wrap">
-      <canvas id="ndxChart" role="img" aria-label="NDX monthly close 2005–2026 with top 5 gain and loss events annotated"></canvas>
+      <canvas id="ndxChart" aria-label="NDX monthly close 2005–2026"></canvas>
       <div class="custom-tooltip" id="tooltip">
         <div class="tt-date" id="ttDate"></div>
         <div class="tt-val" id="ttVal"></div>
@@ -213,174 +171,208 @@
 </div>
 
 <script>
-const monthlyLabels = ["2005-01","2005-02","2005-03","2005-04","2005-05","2005-06","2005-07","2005-08","2005-09","2005-10","2005-11","2005-12","2006-01","2006-02","2006-03","2006-04","2006-05","2006-06","2006-07","2006-08","2006-09","2006-10","2006-11","2006-12","2007-01","2007-02","2007-03","2007-04","2007-05","2007-06","2007-07","2007-08","2007-09","2007-10","2007-11","2007-12","2008-01","2008-02","2008-03","2008-04","2008-05","2008-06","2008-07","2008-08","2008-09","2008-10","2008-11","2008-12","2009-01","2009-02","2009-03","2009-04","2009-05","2009-06","2009-07","2009-08","2009-09","2009-10","2009-11","2009-12","2010-01","2010-02","2010-03","2010-04","2010-05","2010-06","2010-07","2010-08","2010-09","2010-10","2010-11","2010-12","2011-01","2011-02","2011-03","2011-04","2011-05","2011-06","2011-07","2011-08","2011-09","2011-10","2011-11","2011-12","2012-01","2012-02","2012-03","2012-04","2012-05","2012-06","2012-07","2012-08","2012-09","2012-10","2012-11","2012-12","2013-01","2013-02","2013-03","2013-04","2013-05","2013-06","2013-07","2013-08","2013-09","2013-10","2013-11","2013-12","2014-01","2014-02","2014-03","2014-04","2014-05","2014-06","2014-07","2014-08","2014-09","2014-10","2014-11","2014-12","2015-01","2015-02","2015-03","2015-04","2015-05","2015-06","2015-07","2015-08","2015-09","2015-10","2015-11","2015-12","2016-01","2016-02","2016-03","2016-04","2016-05","2016-06","2016-07","2016-08","2016-09","2016-10","2016-11","2016-12","2017-01","2017-02","2017-03","2017-04","2017-05","2017-06","2017-07","2017-08","2017-09","2017-10","2017-11","2017-12","2018-01","2018-02","2018-03","2018-04","2018-05","2018-06","2018-07","2018-08","2018-09","2018-10","2018-11","2018-12","2019-01","2019-02","2019-03","2019-04","2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-11","2019-12","2020-01","2020-02","2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05"];
-const monthlyValues = [1519.63,1511.02,1482.53,1420.79,1542.63,1493.52,1605.14,1581.71,1601.66,1579.18,1672.56,1645.2,1710.75,1670.57,1703.66,1700.71,1579.58,1575.23,1509.43,1579.73,1654.13,1732.54,1791.25,1756.9,1792.28,1761.65,1772.36,1867.75,1928.19,1934.1,1932.06,1988.73,2091.11,2238.98,2089.1,2084.93,1841.42,1745.27,1781.93,1917.7,2032.57,1837.09,1849.15,1872.54,1594.63,1334.78,1185.75,1211.65,1180.25,1116.99,1237.01,1394.33,1435.57,1477.25,1603.36,1625.19,1718.99,1667.13,1767.43,1860.31,1741.04,1818.68,1958.34,2000.63,1852.39,1739.14,1864.0,1767.43,1998.04,2124.45,2117.33,2217.86,2281.91,2350.99,2338.99,2404.08,2372.54,2325.07,2362.81,2241.01,2139.18,2360.08,2295.2,2277.83,2467.95,2623.1,2755.27,2723.68,2524.87,2615.72,2642.53,2772.24,2799.19,2647.92,2677.88,2660.93,2731.53,2738.58,2818.69,2887.44,2981.76,2909.6,3090.19,3073.81,3218.2,3377.73,3487.82,3592.0,3521.92,3696.1,3595.74,3582.02,3736.82,3849.48,3892.5,4082.56,4049.44,4158.21,4337.78,4236.28,4148.43,4440.67,4333.69,4414.25,4508.25,4396.76,4588.91,4274.58,4181.06,4648.83,4664.51,4593.27,4279.17,4201.12,4483.66,4341.3,4523.89,4417.7,4730.23,4771.05,4875.7,4801.27,4810.81,4863.62,5116.77,5330.31,5436.23,5583.53,5788.8,5646.92,5880.33,5988.6,5979.3,6248.56,6365.56,6396.42,6949.99,6854.42,6581.13,6605.57,6967.73,7040.8,7231.98,7654.55,7627.65,6967.1,6949.01,6329.96,6906.84,7097.53,7378.77,7781.46,7127.96,7671.07,7848.78,7691.0,7749.45,8083.83,8403.68,8733.07,8991.51,8461.83,7813.5,9000.51,9555.52,10156.85,10905.88,12110.7,11418.06,11052.95,12268.32,12888.28,12925.38,12909.44,13091.44,13860.76,13686.51,14554.8,14959.9,15582.51,14689.62,15850.47,16135.92,16320.08,14930.05,14237.81,14838.49,12854.8,12642.1,11503.72,12947.97,12272.03,10971.22,11405.57,12030.06,10939.76,12101.93,12042.12,13181.35,13245.99,14254.09,15179.21,15757.0,15501.07,14715.24,14409.78,15947.87,16825.93,17137.24,18043.85,18254.69,17440.69,18536.65,19682.87,19362.43,19574.64,20060.69,19890.42,20930.37,21012.17,21478.05,20884.41,19278.45,19571.02,21340.99,22679.01,23218.12,23415.42,24679.99,25858.13,25434.89,25249.85,25552.39,24960.04,23740.19,27452.12,29580.3];
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const ML = ["2005-01","2005-02","2005-03","2005-04","2005-05","2005-06","2005-07","2005-08","2005-09","2005-10","2005-11","2005-12","2006-01","2006-02","2006-03","2006-04","2006-05","2006-06","2006-07","2006-08","2006-09","2006-10","2006-11","2006-12","2007-01","2007-02","2007-03","2007-04","2007-05","2007-06","2007-07","2007-08","2007-09","2007-10","2007-11","2007-12","2008-01","2008-02","2008-03","2008-04","2008-05","2008-06","2008-07","2008-08","2008-09","2008-10","2008-11","2008-12","2009-01","2009-02","2009-03","2009-04","2009-05","2009-06","2009-07","2009-08","2009-09","2009-10","2009-11","2009-12","2010-01","2010-02","2010-03","2010-04","2010-05","2010-06","2010-07","2010-08","2010-09","2010-10","2010-11","2010-12","2011-01","2011-02","2011-03","2011-04","2011-05","2011-06","2011-07","2011-08","2011-09","2011-10","2011-11","2011-12","2012-01","2012-02","2012-03","2012-04","2012-05","2012-06","2012-07","2012-08","2012-09","2012-10","2012-11","2012-12","2013-01","2013-02","2013-03","2013-04","2013-05","2013-06","2013-07","2013-08","2013-09","2013-10","2013-11","2013-12","2014-01","2014-02","2014-03","2014-04","2014-05","2014-06","2014-07","2014-08","2014-09","2014-10","2014-11","2014-12","2015-01","2015-02","2015-03","2015-04","2015-05","2015-06","2015-07","2015-08","2015-09","2015-10","2015-11","2015-12","2016-01","2016-02","2016-03","2016-04","2016-05","2016-06","2016-07","2016-08","2016-09","2016-10","2016-11","2016-12","2017-01","2017-02","2017-03","2017-04","2017-05","2017-06","2017-07","2017-08","2017-09","2017-10","2017-11","2017-12","2018-01","2018-02","2018-03","2018-04","2018-05","2018-06","2018-07","2018-08","2018-09","2018-10","2018-11","2018-12","2019-01","2019-02","2019-03","2019-04","2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-11","2019-12","2020-01","2020-02","2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05"];
+const MV = [1519.63,1511.02,1482.53,1420.79,1542.63,1493.52,1605.14,1581.71,1601.66,1579.18,1672.56,1645.2,1710.75,1670.57,1703.66,1700.71,1579.58,1575.23,1509.43,1579.73,1654.13,1732.54,1791.25,1756.9,1792.28,1761.65,1772.36,1867.75,1928.19,1934.1,1932.06,1988.73,2091.11,2238.98,2089.1,2084.93,1841.42,1745.27,1781.93,1917.7,2032.57,1837.09,1849.15,1872.54,1594.63,1334.78,1185.75,1211.65,1180.25,1116.99,1237.01,1394.33,1435.57,1477.25,1603.36,1625.19,1718.99,1667.13,1767.43,1860.31,1741.04,1818.68,1958.34,2000.63,1852.39,1739.14,1864.0,1767.43,1998.04,2124.45,2117.33,2217.86,2281.91,2350.99,2338.99,2404.08,2372.54,2325.07,2362.81,2241.01,2139.18,2360.08,2295.2,2277.83,2467.95,2623.1,2755.27,2723.68,2524.87,2615.72,2642.53,2772.24,2799.19,2647.92,2677.88,2660.93,2731.53,2738.58,2818.69,2887.44,2981.76,2909.6,3090.19,3073.81,3218.2,3377.73,3487.82,3592.0,3521.92,3696.1,3595.74,3582.02,3736.82,3849.48,3892.5,4082.56,4049.44,4158.21,4337.78,4236.28,4148.43,4440.67,4333.69,4414.25,4508.25,4396.76,4588.91,4274.58,4181.06,4648.83,4664.51,4593.27,4279.17,4201.12,4483.66,4341.3,4523.89,4417.7,4730.23,4771.05,4875.7,4801.27,4810.81,4863.62,5116.77,5330.31,5436.23,5583.53,5788.8,5646.92,5880.33,5988.6,5979.3,6248.56,6365.56,6396.42,6949.99,6854.42,6581.13,6605.57,6967.73,7040.8,7231.98,7654.55,7627.65,6967.1,6949.01,6329.96,6906.84,7097.53,7378.77,7781.46,7127.96,7671.07,7848.78,7691.0,7749.45,8083.83,8403.68,8733.07,8991.51,8461.83,7813.5,9000.51,9555.52,10156.85,10905.88,12110.7,11418.06,11052.95,12268.32,12888.28,12925.38,12909.44,13091.44,13860.76,13686.51,14554.8,14959.9,15582.51,14689.62,15850.47,16135.92,16320.08,14930.05,14237.81,14838.49,12854.8,12642.1,11503.72,12947.97,12272.03,10971.22,11405.57,12030.06,10939.76,12101.93,12042.12,13181.35,13245.99,14254.09,15179.21,15757.0,15501.07,14715.24,14409.78,15947.87,16825.93,17137.24,18043.85,18254.69,17440.69,18536.65,19682.87,19362.43,19574.64,20060.69,19890.42,20930.37,21012.17,21478.05,20884.41,19278.45,19571.02,21340.99,22679.01,23218.12,23415.42,24679.99,25858.13,25434.89,25249.85,25552.39,24960.04,23740.19,27452.12,29580.3];
 
 const topGains = [
-  { date:'2008-10-13', month:'2008-10', pct:'+12.58', pts:'+159.7', close:1429.54, rank:1, era:'GFC', catalyst:'G7 Emergency Bank Rescue + TARP Capital Injections', detail:'Emergency G7 meeting pledged unlimited bank funding. US Treasury announced the Capital Purchase Program injecting $125B into 9 major banks simultaneously. Classic oversold snap-back amplified by coordinated global policy action — the most violent single-day rally of the GFC era.' },
-  { date:'2025-04-09', month:'2025-04', pct:'+12.02', pts:'+2,054.7', close:19145.06, rank:2, era:'Trade War 2025', catalyst:'Trump 90-Day Tariff Pause — Largest Point Gain in NDX History', detail:'After days of escalating tariffs threatening a full US-China trade war, Trump announced a 90-day pause on most country tariffs while raising China to 145%. Markets had priced in worst-case. The relief was instantaneous and violent. +2,054 points is the single largest point gain in 40 years of NDX history.' },
-  { date:'2008-10-28', month:'2008-10', pct:'+10.92', pts:'+127.8', close:1297.57, rank:3, era:'GFC', catalyst:'TARP Deployments Begin + European Bank Recapitalisations', detail:'TARP\'s $700B bailout began deploying into bank equity stakes. European governments announced coordinated bank recapitalisations in France, Germany and the UK. Index had just made multi-year lows; any stabilisation signal triggered violent short-covering.' },
-  { date:'2020-03-13', month:'2020-03', pct:'+10.07', pts:'+731.6', close:7995.26, rank:4, era:'COVID-19', catalyst:'Trump National Emergency + $50B Federal Funds Unlocked', detail:'Trump declared a national emergency unlocking $50B in federal disaster funds and announced drive-through COVID testing partnerships. Markets had fallen 30% in 23 sessions. This was the first major relief rally of the COVID crash, though extreme volatility continued for two more weeks.' },
-  { date:'2009-03-10', month:'2009-03', pct:'+6.57', pts:'+68.6', close:1112.44, rank:5, era:'GFC', catalyst:'Citigroup Profit Memo — Markets Signal the GFC Bottom', detail:'Citigroup CEO Vikram Pandit\'s internal memo (which leaked) revealed the bank was profitable in Jan–Feb 2009 — the first signal major banks were not going to zero. NDX had just made a 12-year low at 1,036 on Nov 20, 2008. This session effectively marked the bottom and the start of the multi-year bull run.' }
+  {date:'2008-10-13',month:'2008-10',pct:'+12.58',pts:'+159.7',close:1429.54,rank:1,era:'GFC',catalyst:'G7 Emergency Bank Rescue + TARP Capital Injections',detail:'Emergency G7 meeting pledged unlimited bank funding. US Treasury announced the Capital Purchase Program injecting $125B into 9 major banks simultaneously. The most violent single-day rally of the GFC era — a classic oversold snap-back amplified by coordinated global policy action.'},
+  {date:'2025-04-09',month:'2025-04',pct:'+12.02',pts:'+2,054.7',close:19145.06,rank:2,era:'Trade War 2025',catalyst:'Trump 90-Day Tariff Pause — Largest Point Gain in NDX History',detail:'After days of escalating tariffs threatening a full US-China trade war, Trump announced a 90-day pause on most country tariffs while raising China to 145%. Markets had priced in worst-case collapse. +2,054 points is the single largest point gain in 40 years of NDX history.'},
+  {date:'2008-10-28',month:'2008-10',pct:'+10.92',pts:'+127.8',close:1297.57,rank:3,era:'GFC',catalyst:'TARP Deployments Begin + European Bank Recapitalisations',detail:'TARP\'s $700B bailout began deploying into bank equity stakes. European governments announced coordinated bank recapitalisations in France, Germany and the UK. Index had just made multi-year lows — any stabilisation signal triggered violent short-covering.'},
+  {date:'2020-03-13',month:'2020-03',pct:'+10.07',pts:'+731.6',close:7995.26,rank:4,era:'COVID-19',catalyst:'Trump National Emergency + $50B Federal Funds Unlocked',detail:'Trump declared a national emergency unlocking $50B in federal disaster funds. Markets had fallen 30% in 23 sessions. This was the first major relief rally of the COVID crash, though extreme volatility continued for two more weeks.'},
+  {date:'2009-03-10',month:'2009-03',pct:'+6.57',pts:'+68.6',close:1112.44,rank:5,era:'GFC',catalyst:'Citigroup Profit Memo — Markets Signal the GFC Bottom',detail:'Citigroup CEO Vikram Pandit\'s internal memo (which leaked) revealed the bank was profitable in Jan–Feb 2009 — the first signal major banks were not going to zero. NDX had just made a 12-year low at 1,036 on Nov 20, 2008. This session effectively marked the bottom and the start of the multi-year bull run.'}
 ];
-
 const topLosses = [
-  { date:'2020-03-16', month:'2020-03', pct:'−12.19', pts:'−974.9', close:7020.38, rank:1, era:'COVID-19', catalyst:'Fed Cuts to 0% + $700B QE — Markets Sell Off Harder', detail:'The Fed slashed rates to 0–0.25% and launched $700B in QE on a Sunday night — and markets sold off harder. WHO had declared a global pandemic 4 days prior. US city shutdowns were beginning. The single worst NDX session since the GFC, and the largest absolute point loss in the index\'s history at the time.' },
-  { date:'2008-09-29', month:'2008-09', pct:'−10.52', pts:'−175.9', close:1496.15, rank:2, era:'GFC', catalyst:'US House Rejects $700B TARP Bailout Bill 228–205', detail:'The House voted down the $700B TARP bailout in a stunning political defeat. Lehman had collapsed 15 days earlier. Credit markets were completely frozen. This session represented peak systemic fear that the entire US financial system could fail.' },
-  { date:'2020-03-12', month:'2020-03', pct:'−9.27', pts:'−742.5', close:7263.65, rank:3, era:'COVID-19', catalyst:'Trump European Travel Ban + Saudi-Russia Oil Price War', detail:'Trump announced a surprise 30-day European travel ban without coordinating with EU allies. Simultaneously Saudi Arabia launched an oil price war — oil fell 25% in one session. Both shocks hit at the same time. Circuit breakers triggered at the open. The third trading halt that week.' },
-  { date:'2008-10-15', month:'2008-10', pct:'−8.82', pts:'−120.4', close:1244.23, rank:4, era:'GFC', catalyst:'Recession Fears Resurface — Retail Sales Plunge, Banks Miss Earnings', detail:'Despite TARP being signed into law days earlier, retail sales posted their largest monthly decline in 3 years, jobless claims spiked, and major bank earnings began with massive misses. Markets concluded TARP alone couldn\'t prevent a deep recession — selling resumed with full force.' },
-  { date:'2008-12-01', month:'2008-12', pct:'−7.98', pts:'−94.6', close:1091.16, rank:5, era:'GFC', catalyst:'NBER Officially Declares US Has Been in Recession Since Dec 2007', detail:'The National Bureau of Economic Research officially declared the US had been in recession since December 2007 — a full year had already elapsed. Combined with auto industry bailout uncertainty (Big Three congressional hearings) and continued bank losses, markets sold off sharply.' }
+  {date:'2020-03-16',month:'2020-03',pct:'−12.19',pts:'−974.9',close:7020.38,rank:1,era:'COVID-19',catalyst:'Fed Cuts to 0% + $700B QE — Markets Sell Off Harder',detail:'The Fed slashed rates to 0–0.25% and launched $700B in QE on a Sunday night — and markets sold off harder. WHO had declared a global pandemic 4 days prior. The single worst NDX session since the GFC, and the largest absolute point loss in the index\'s history at the time.'},
+  {date:'2008-09-29',month:'2008-09',pct:'−10.52',pts:'−175.9',close:1496.15,rank:2,era:'GFC',catalyst:'US House Rejects $700B TARP Bailout Bill 228–205',detail:'The House voted down the $700B TARP bailout in a stunning political defeat. Lehman had collapsed 15 days earlier. Credit markets were completely frozen. Peak systemic fear that the entire US financial system could fail.'},
+  {date:'2020-03-12',month:'2020-03',pct:'−9.27',pts:'−742.5',close:7263.65,rank:3,era:'COVID-19',catalyst:'Trump European Travel Ban + Saudi-Russia Oil Price War',detail:'Trump announced a surprise 30-day European travel ban without coordinating with EU allies. Simultaneously Saudi Arabia launched an oil price war — oil fell 25% in one session. Both shocks hit simultaneously. Circuit breakers triggered at the open. The third trading halt that week.'},
+  {date:'2008-10-15',month:'2008-10',pct:'−8.82',pts:'−120.4',close:1244.23,rank:4,era:'GFC',catalyst:'Recession Fears Resurface — Retail Sales Plunge, Banks Miss Earnings',detail:'Despite TARP being signed into law days earlier, retail sales posted their largest monthly decline in 3 years, jobless claims spiked, and major bank earnings began with massive misses. Markets concluded TARP alone could not prevent a deep recession.'},
+  {date:'2008-12-01',month:'2008-12',pct:'−7.98',pts:'−94.6',close:1091.16,rank:5,era:'GFC',catalyst:'NBER Officially Declares US Has Been in Recession Since Dec 2007',detail:'The NBER officially declared the US had been in recession since December 2007 — a full year had already elapsed. Combined with auto industry bailout uncertainty and continued bank losses, markets sold off sharply. This confirmed the recession was far deeper than assumed.'}
 ];
 
-// ANNOTATION PLUGIN
-const annotationPlugin = {
-  id: 'eventAnnotations',
-  afterDraw(chart) {
-    const { ctx, chartArea, scales } = chart;
-    const allEvents = [...topGains.map(e => ({ ...e, type:'gain' })), ...topLosses.map(e => ({ ...e, type:'loss' }))];
-    allEvents.forEach(ev => {
-      const idx = monthlyLabels.indexOf(ev.month);
-      if (idx < 0) return;
-      const x = scales.x.getPixelForValue(idx);
-      const y = scales.y.getPixelForValue(monthlyValues[idx]);
-      const color = ev.type === 'gain' ? '#22c97a' : '#f04a5a';
-      ctx.save();
-      ctx.beginPath(); ctx.setLineDash([3,4]); ctx.strokeStyle = color; ctx.globalAlpha = 0.28; ctx.lineWidth = 1;
-      ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke();
-      ctx.beginPath(); ctx.setLineDash([]); ctx.globalAlpha = 0.14; ctx.fillStyle = color;
-      ctx.arc(x, y, 9, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.globalAlpha = 1; ctx.fillStyle = color;
-      ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#0a0c10'; ctx.font = '600 7px DM Sans,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(ev.rank, x, y);
-      ctx.restore();
-    });
-  }
-};
-Chart.register(annotationPlugin);
+const allEvents = [...topGains.map(e=>({...e,type:'gain'})),...topLosses.map(e=>({...e,type:'loss'}))];
 
-// BUILD CHART
-const canvasEl = document.getElementById('ndxChart');
-const chartCtx = canvasEl.getContext('2d');
-const gradFill = chartCtx.createLinearGradient(0, 0, 0, 370);
-gradFill.addColorStop(0, 'rgba(61,155,255,0.16)');
-gradFill.addColorStop(1, 'rgba(61,155,255,0)');
+// ── NATIVE CANVAS CHART ───────────────────────────────────────────────────────
+const canvas = document.getElementById('ndxChart');
+const ctx = canvas.getContext('2d');
+const PAD = {top:16, right:16, bottom:32, left:52};
+let W, H, chartW, chartH, minV, maxV, scaleX, scaleY;
 
-const isMobile = () => window.innerWidth < 640;
-
-const ndxChart = new Chart(chartCtx, {
-  type: 'line',
-  data: {
-    labels: monthlyLabels.map((_, i) => i),
-    datasets: [{ data: monthlyValues, borderColor: '#3d9bff', backgroundColor: gradFill, borderWidth: 1.5, pointRadius: 0, fill: true, tension: 0.35 }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    plugins: { legend: { display: false }, tooltip: { enabled: false } },
-    scales: {
-      x: {
-        type: 'linear', min: 0, max: monthlyLabels.length - 1,
-        ticks: {
-          maxTicksLimit: isMobile() ? 5 : 11,
-          callback: (v) => {
-            const i = Math.round(v);
-            if (i >= 0 && i < monthlyLabels.length && monthlyLabels[i].endsWith('-01')) return monthlyLabels[i].split('-')[0];
-            return '';
-          },
-          color: '#555e72', font: { family: 'DM Mono', size: 9 }
-        },
-        grid: { display: false }, border: { color: 'rgba(255,255,255,0.06)' }
-      },
-      y: {
-        ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v, color: '#555e72', font: { family: 'DM Mono', size: 9 }, maxTicksLimit: 6 },
-        grid: { color: 'rgba(255,255,255,0.04)' }, border: { display: false }
-      }
-    },
-    onHover: (evt) => {
-      if (!evt.native) return;
-      const rect = canvasEl.getBoundingClientRect();
-      const clientX = evt.native.touches ? evt.native.touches[0].clientX : evt.native.clientX;
-      const mouseX = clientX - rect.left;
-      const idx = Math.round(ndxChart.scales.x.getValueForPixel(mouseX));
-      if (idx < 0 || idx >= monthlyLabels.length) return;
-      updateTooltip(idx, mouseX, ndxChart.scales.y.getPixelForValue(monthlyValues[idx]), rect);
-    }
-  }
-});
-
-canvasEl.addEventListener('touchstart', handleTouch, { passive: true });
-canvasEl.addEventListener('touchmove', handleTouch, { passive: true });
-canvasEl.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.opacity = 0; });
-
-function handleTouch(e) {
-  if (!e.touches.length) return;
-  const rect = canvasEl.getBoundingClientRect();
-  const mouseX = e.touches[0].clientX - rect.left;
-  const idx = Math.round(ndxChart.scales.x.getValueForPixel(mouseX));
-  if (idx < 0 || idx >= monthlyLabels.length) return;
-  updateTooltip(idx, mouseX, ndxChart.scales.y.getPixelForValue(monthlyValues[idx]), rect);
+function resize() {
+  const wrap = canvas.parentElement;
+  W = wrap.clientWidth;
+  H = wrap.clientHeight;
+  canvas.width = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  chartW = W - PAD.left - PAD.right;
+  chartH = H - PAD.top - PAD.bottom;
+  minV = Math.min(...MV) * 0.97;
+  maxV = Math.max(...MV) * 1.02;
+  scaleX = i => PAD.left + (i / (ML.length - 1)) * chartW;
+  scaleY = v => PAD.top + (1 - (v - minV) / (maxV - minV)) * chartH;
+  draw();
 }
 
-const allEvents = [...topGains.map(e => ({ ...e, type:'gain' })), ...topLosses.map(e => ({ ...e, type:'loss' }))];
+function draw(hoverIdx) {
+  ctx.clearRect(0, 0, W, H);
 
-function updateTooltip(idx, mouseX, yPx, rect) {
-  const label = monthlyLabels[idx];
-  const val = monthlyValues[idx];
-  const prev = idx > 0 ? monthlyValues[idx-1] : val;
+  // grid lines
+  const ticks = [5000,10000,15000,20000,25000];
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  ticks.forEach(t => {
+    if (t < minV || t > maxV) return;
+    const y = scaleY(t);
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+    ctx.fillStyle = '#555e72';
+    ctx.font = '9px Courier New,monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText((t/1000).toFixed(0)+'k', PAD.left - 6, y + 3);
+  });
+
+  // year labels
+  ctx.fillStyle = '#555e72';
+  ctx.font = '9px Courier New,monospace';
+  ctx.textAlign = 'center';
+  const step = W < 500 ? 24 : 12;
+  ML.forEach((l, i) => {
+    if (l.endsWith('-01') && i % step === 0) {
+      ctx.fillText(l.split('-')[0], scaleX(i), H - 6);
+    }
+  });
+
+  // gradient fill
+  const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + chartH);
+  grad.addColorStop(0, 'rgba(61,155,255,0.18)');
+  grad.addColorStop(1, 'rgba(61,155,255,0)');
+  ctx.beginPath();
+  MV.forEach((v, i) => i === 0 ? ctx.moveTo(scaleX(i), scaleY(v)) : ctx.lineTo(scaleX(i), scaleY(v)));
+  ctx.lineTo(scaleX(MV.length-1), PAD.top + chartH);
+  ctx.lineTo(scaleX(0), PAD.top + chartH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  ctx.strokeStyle = '#3d9bff';
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
+  MV.forEach((v, i) => i === 0 ? ctx.moveTo(scaleX(i), scaleY(v)) : ctx.lineTo(scaleX(i), scaleY(v)));
+  ctx.stroke();
+
+  // event markers
+  allEvents.forEach(ev => {
+    const i = ML.indexOf(ev.month);
+    if (i < 0) return;
+    const x = scaleX(i), y = scaleY(MV[i]);
+    const color = ev.type === 'gain' ? '#22c97a' : '#f04a5a';
+    // dashed vertical
+    ctx.save();
+    ctx.setLineDash([3,4]);
+    ctx.strokeStyle = color; ctx.globalAlpha = 0.28; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, PAD.top + chartH); ctx.stroke();
+    ctx.setLineDash([]);
+    // glow
+    ctx.globalAlpha = 0.14; ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI*2); ctx.fill();
+    // dot
+    ctx.globalAlpha = 1; ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
+    // rank number
+    ctx.fillStyle = '#0a0c10';
+    ctx.font = '600 7px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(ev.rank, x, y);
+    ctx.restore();
+  });
+
+  // hover crosshair
+  if (hoverIdx !== undefined) {
+    const x = scaleX(hoverIdx);
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, PAD.top + chartH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#3d9bff';
+    ctx.beginPath(); ctx.arc(x, scaleY(MV[hoverIdx]), 4, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ── TOOLTIP LOGIC ─────────────────────────────────────────────────────────────
+const isMobile = () => window.innerWidth < 640;
+
+function getIdx(clientX) {
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = clientX - rect.left;
+  const i = Math.round((mouseX - PAD.left) / chartW * (ML.length - 1));
+  return Math.max(0, Math.min(ML.length - 1, i));
+}
+
+function showTooltip(clientX) {
+  const idx = getIdx(clientX);
+  const label = ML[idx], val = MV[idx];
+  const prev = idx > 0 ? MV[idx-1] : val;
   const chg = ((val - prev) / prev * 100).toFixed(1);
   const match = allEvents.find(e => e.month === label);
+  draw(idx);
 
   if (isMobile()) {
     const tt = document.getElementById('touchTooltip');
     tt.classList.add('visible');
     document.getElementById('ttDateM').textContent = label;
-    document.getElementById('ttValM').textContent = val.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    document.getElementById('ttValM').textContent = val.toLocaleString(undefined,{maximumFractionDigits:0});
     const chgEl = document.getElementById('ttChgM');
-    chgEl.textContent = (chg >= 0 ? '+' : '') + chg + '% MoM';
-    chgEl.className = 'tt-chg-m ' + (chg >= 0 ? 'pos' : 'neg');
+    chgEl.textContent = (chg>=0?'+':'')+chg+'% MoM';
+    chgEl.className = 'tt-chg-m '+(chg>=0?'pos':'neg');
     const evEl = document.getElementById('ttEventM');
-    if (match) {
-      evEl.textContent = (match.type==='gain' ? '▲ ' : '▼ ') + match.pct + '% — ' + match.catalyst;
-      evEl.style.display = 'block';
-      evEl.style.color = match.type==='gain' ? '#22c97a' : '#f04a5a';
-    } else { evEl.style.display = 'none'; }
+    if (match) { evEl.textContent=(match.type==='gain'?'▲ ':'▼ ')+match.pct+'% — '+match.catalyst; evEl.style.display='block'; evEl.style.color=match.type==='gain'?'#22c97a':'#f04a5a'; }
+    else evEl.style.display='none';
   } else {
     const tt = document.getElementById('tooltip');
     document.getElementById('ttDate').textContent = label;
-    document.getElementById('ttVal').textContent = val.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    document.getElementById('ttVal').textContent = val.toLocaleString(undefined,{maximumFractionDigits:0});
     const chgEl = document.getElementById('ttChg');
-    chgEl.textContent = (chg >= 0 ? '+' : '') + chg + '% MoM';
-    chgEl.className = 'tt-chg ' + (chg >= 0 ? 'pos' : 'neg');
+    chgEl.textContent = (chg>=0?'+':'')+chg+'% MoM';
+    chgEl.className = 'tt-chg '+(chg>=0?'pos':'neg');
     const evEl = document.getElementById('ttEvent');
-    if (match) {
-      evEl.textContent = (match.type==='gain' ? '▲ ' : '▼ ') + match.pct + '% — ' + match.catalyst.substring(0,55) + '…';
-      evEl.style.display = 'block';
-      evEl.style.color = match.type==='gain' ? '#22c97a' : '#f04a5a';
-    } else { evEl.style.display = 'none'; }
+    if (match) { evEl.textContent=(match.type==='gain'?'▲ ':'▼ ')+match.pct+'% — '+match.catalyst.substring(0,55)+'…'; evEl.style.display='block'; evEl.style.color=match.type==='gain'?'#22c97a':'#f04a5a'; }
+    else evEl.style.display='none';
+    const rect = canvas.getBoundingClientRect();
+    const x = scaleX(idx);
     const ttW = 220;
-    let left = mouseX + 14;
-    if (left + ttW > rect.width) left = mouseX - ttW - 14;
-    tt.style.left = left + 'px';
-    tt.style.top = Math.max(8, yPx - 40) + 'px';
+    let left = x + 14; if (left + ttW > W) left = x - ttW - 14;
+    tt.style.left = left+'px';
+    tt.style.top = Math.max(8, scaleY(val) - 40)+'px';
     tt.style.opacity = 1;
   }
 }
 
-// CARDS
-const sortedCards = [...topGains.map(e => ({ ...e, type:'gain' })), ...topLosses.map(e => ({ ...e, type:'loss' }))]
-  .sort((a, b) => Math.abs(parseFloat(b.pct.replace('−','-'))) - Math.abs(parseFloat(a.pct.replace('−','-'))));
+canvas.addEventListener('mousemove', e => showTooltip(e.clientX));
+canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.opacity=0; draw(); });
+canvas.addEventListener('touchstart', e => { e.preventDefault(); showTooltip(e.touches[0].clientX); }, {passive:false});
+canvas.addEventListener('touchmove', e => { e.preventDefault(); showTooltip(e.touches[0].clientX); }, {passive:false});
+
+window.addEventListener('resize', () => { ctx.resetTransform(); resize(); });
+resize();
+
+// ── CARDS ─────────────────────────────────────────────────────────────────────
+const sortedCards = [...topGains.map(e=>({...e,type:'gain'})),...topLosses.map(e=>({...e,type:'loss'}))]
+  .sort((a,b) => Math.abs(parseFloat(b.pct.replace('−','-'))) - Math.abs(parseFloat(a.pct.replace('−','-'))));
 
 function renderCards(filter) {
   const grid = document.getElementById('cardsGrid');
   grid.innerHTML = '';
-  const items = filter === 'all' ? sortedCards : sortedCards.filter(e => e.type === filter);
+  const items = filter==='all' ? sortedCards : sortedCards.filter(e=>e.type===filter);
   items.forEach((e, i) => {
     const div = document.createElement('div');
-    div.className = 'event-card ' + e.type;
-    div.style.animationDelay = (i * 0.04) + 's';
+    div.className = 'event-card '+e.type;
+    div.style.animationDelay = (i*0.04)+'s';
     div.innerHTML = `
       <div class="card-rank ${e.type}">${e.rank}</div>
       <div class="card-top">
@@ -393,35 +385,21 @@ function renderCards(filter) {
       <div class="card-detail">${e.detail}</div>
     `;
     if (!isMobile()) {
-      div.addEventListener('mouseenter', () => highlightMonth(e.month));
-      div.addEventListener('mouseleave', clearHighlight);
+      div.addEventListener('mouseenter', () => {
+        const idx = ML.indexOf(e.month);
+        if (idx >= 0) draw(idx);
+      });
+      div.addEventListener('mouseleave', () => draw());
     }
     grid.appendChild(div);
   });
 }
 
-function highlightMonth(month) {
-  const idx = monthlyLabels.indexOf(month);
-  if (idx < 0) return;
-  ndxChart.data.datasets[0].pointRadius = monthlyLabels.map((_, i) => i === idx ? 7 : 0);
-  ndxChart.data.datasets[0].pointBackgroundColor = monthlyLabels.map((l, i) => {
-    if (i !== idx) return 'transparent';
-    const ev = allEvents.find(e => e.month === l);
-    return ev ? (ev.type === 'gain' ? '#22c97a' : '#f04a5a') : '#3d9bff';
-  });
-  ndxChart.update('none');
-}
-
-function clearHighlight() {
-  ndxChart.data.datasets[0].pointRadius = 0;
-  ndxChart.update('none');
-}
-
 function filterCards(filter, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.className = 'tab');
-  if (filter === 'gain') btn.className = 'tab active-gain';
-  else if (filter === 'loss') btn.className = 'tab active-loss';
-  else btn.className = 'tab active-all';
+  document.querySelectorAll('.tab').forEach(t => t.className='tab');
+  if (filter==='gain') btn.className='tab active-gain';
+  else if (filter==='loss') btn.className='tab active-loss';
+  else btn.className='tab active-all';
   renderCards(filter);
 }
 
