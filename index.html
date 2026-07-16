@@ -160,6 +160,7 @@
     <button class="nav-tab active" onclick="switchView('overview',this)">Overview</button>
     <button class="nav-tab" onclick="switchView('drops',this)">Top 10 Drops</button>
     <button class="nav-tab" onclick="switchView('drawdowns',this)">Worst Drawdowns</button>
+    <button class="nav-tab" onclick="switchView('gaps',this)">Gap Analysis</button>
     <button class="nav-tab" onclick="switchView('stats',this)">Market Stats</button>
   </div>
 
@@ -226,6 +227,56 @@
         <div class="is-row"><span class="is-date" id="diDay"></span><span class="is-val" id="diPct"></span></div>
       </div>
       <div class="dd-narrative" id="ddNarrative"></div>
+    </div>
+  </div>
+
+  <!-- ═══ GAP ANALYSIS ═══ -->
+  <div class="view" id="view-gaps">
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-title" style="margin-bottom:6px">Overnight gap vs intraday session — where crash damage actually happens</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.6">Every daily move splits into two parts: the <strong style="color:var(--text)">overnight gap</strong> (previous close → open, when regular investors can't trade) and the <strong style="color:var(--text)">intraday session</strong> (open → close). Gap data requires opening prices, available for <strong style="color:var(--text)">Jul 2016 – Jul 2026</strong> (official Nasdaq data, 2,512 sessions). Tap any bar for details.</p>
+    </div>
+
+    <div class="dd-stats" style="margin-bottom:14px">
+      <div class="dd-stat"><div class="dd-stat-label">Worst Gap Ever</div><div class="dd-stat-val neg">−7.25%</div><div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px">2020-03-09</div></div>
+      <div class="dd-stat"><div class="dd-stat-label">Gaps Worse Than −9%</div><div class="dd-stat-val">0 <span style="font-size:10px;color:var(--text3)">in 10 yrs</span></div></div>
+      <div class="dd-stat"><div class="dd-stat-label">Gaps Beyond ±3%</div><div class="dd-stat-val">27 <span style="font-size:10px;color:var(--text3)">days</span></div></div>
+      <div class="dd-stat"><div class="dd-stat-label">Median Daily Gap</div><div class="dd-stat-val">0.38%</div></div>
+      <div class="dd-stat"><div class="dd-stat-label">Futures Limit-Down</div><div class="dd-stat-val neg">−5% <span style="font-size:10px;color:var(--text3)">overnight halt</span></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title" id="gapChartTitle">Top 10 Gap-Down Opens · decomposed</div>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#d64550"></div>Overnight Gap</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e8a33d"></div>Intraday Session</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#1a2233"></div>◆ Full Day</div>
+          </div>
+          <div class="tab-group">
+            <button class="tab active-loss" onclick="switchGaps('down',this)">Gap-Downs</button>
+            <button class="tab" onclick="switchGaps('up',this)">Gap-Ups</button>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:clamp(280px,52vw,400px)">
+        <canvas id="gapChart"></canvas>
+        <div class="tip" id="gapTip" style="min-width:210px">
+          <div class="tip-date" id="gtDate"></div>
+          <div class="tip-val" id="gtDod"></div>
+          <div class="tip-sub" id="gtGap"></div>
+          <div class="tip-sub" id="gtIntra"></div>
+          <div class="tip-event" id="gtLevels"></div>
+        </div>
+      </div>
+      <div class="info-strip" id="gapInfo">
+        <div class="is-row"><span class="is-date" id="giDate"></span><span class="is-val" id="giDod"></span></div>
+        <div class="is-chg" id="giDetail" style="color:var(--text2)"></div>
+      </div>
+      <div class="dd-narrative" id="gapNarrative">
+        <strong>The key insight:</strong> on the worst days, most damage happens before the market even opens. March 9, 2020 gapped down −7.25% at the open — then actually closed <em>up</em> 0.45% from that open. Anyone who could only trade market hours made money that day, yet the index "fell 6.8%". Meanwhile March 16 was the true horror: a −6.2% gap <em>followed by</em> another −6.4% intraday bleed — no bounce, pure capitulation. Also notice the reversal pattern: several of the biggest gap-downs (Apr 7 2025, Feb 28 2020, Aug 5 2024) finished flat or positive — violent overnight panic often marks short-term exhaustion. Across all 66 days that fell more than 3%, the overnight gap averaged −1.65% and the intraday session −2.51%.
+      </div>
     </div>
   </div>
 
@@ -314,6 +365,7 @@ function switchView(name, btn) {
   btn.classList.add('active');
   if (name === 'overview') setTimeout(initMain, 50);
   if (name === 'drawdowns') setTimeout(() => selectDD(currentDD), 50);
+  if (name === 'gaps') setTimeout(initGapChart, 50);
 }
 
 // ═══ MAIN CHART (native canvas) ═══════════════════════════════════════════════
@@ -653,9 +705,167 @@ ddCanvas.addEventListener('touchmove', e => ddHover(e.touches[0].clientX), {pass
 renderDDSelector();
 selectDD(0);
 
+// ═══ GAP ANALYSIS ═════════════════════════════════════════════════════════════
+// roundRect polyfill for older browsers
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){ this.rect(x,y,w,h); return this; };
+}
+const gapDowns = [{"date":"2020-03-09","gap":-7.25,"intra":0.45,"dod":-6.83,"prevClose":8530.34,"open":7912.14,"close":7948.03},{"date":"2020-03-12","gap":-6.91,"intra":-2.54,"dod":-9.27,"prevClose":8006.12,"open":7452.76,"close":7263.65},{"date":"2020-03-16","gap":-6.17,"intra":-6.42,"dod":-12.19,"prevClose":7995.26,"open":7502.26,"close":7020.38},{"date":"2020-03-18","gap":-6.02,"intra":2.15,"dod":-4.0,"prevClose":7473.95,"open":7023.86,"close":7175.18},{"date":"2024-08-05","gap":-5.4,"intra":2.58,"dod":-2.96,"prevClose":18440.84,"open":17444.4,"close":17895.15},{"date":"2020-02-24","gap":-4.14,"intra":0.27,"dod":-3.89,"prevClose":9446.69,"open":9055.3,"close":9079.63},{"date":"2025-04-03","gap":-4.12,"intra":-1.35,"dod":-5.41,"prevClose":19581.78,"open":18774.15,"close":18521.48},{"date":"2020-09-08","gap":-4.11,"intra":-0.68,"dod":-4.77,"prevClose":11622.13,"open":11143.91,"close":11068.26},{"date":"2025-04-07","gap":-3.6,"intra":3.93,"dod":0.19,"prevClose":17397.69,"open":16771.77,"close":17430.68},{"date":"2020-02-28","gap":-3.59,"intra":4.03,"dod":0.3,"prevClose":8436.67,"open":8133.85,"close":8461.83}];
+const gapUps = [{"date":"2020-03-13","gap":5.77,"intra":4.06,"dod":10.07,"prevClose":7263.65,"open":7683.04,"close":7995.26},{"date":"2022-11-10","gap":5.12,"intra":2.25,"dod":7.49,"prevClose":10797.55,"open":11350.42,"close":11605.96},{"date":"2020-03-24","gap":4.88,"intra":2.79,"dod":7.81,"prevClose":7006.92,"open":7348.99,"close":7553.82},{"date":"2020-04-06","gap":3.86,"intra":3.36,"dod":7.35,"prevClose":7528.11,"open":7819.06,"close":8081.66},{"date":"2025-05-12","gap":3.78,"intra":0.24,"dod":4.02,"prevClose":20061.45,"open":20818.78,"close":20868.15},{"date":"2022-12-13","gap":3.71,"intra":-2.53,"dod":1.09,"prevClose":11706.44,"open":12141.24,"close":11834.21},{"date":"2026-04-08","gap":3.48,"intra":-0.57,"dod":2.9,"prevClose":24202.37,"open":25045.36,"close":24903.17},{"date":"2025-04-08","gap":3.46,"intra":-5.23,"dod":-1.95,"prevClose":17430.68,"open":18034.46,"close":17090.4},{"date":"2020-03-10","gap":3.35,"intra":1.93,"dod":5.34,"prevClose":7948.03,"open":8213.97,"close":8372.27},{"date":"2025-04-23","gap":3.25,"intra":-0.94,"dod":2.28,"prevClose":18276.41,"open":18870.62,"close":18693.26}];
+
+let gapMode = 'down';
+const gapCanvas = document.getElementById('gapChart');
+const gCtx = gapCanvas.getContext('2d');
+const GPAD = {top:20, right:16, bottom:44, left:44};
+let gW, gH, gCW, gCH;
+let gapBarRects = [];
+
+function switchGaps(mode, btn) {
+  gapMode = mode;
+  document.querySelectorAll('#view-gaps .tab').forEach(t => t.className='tab');
+  btn.className = mode==='down' ? 'tab active-loss' : 'tab active-gain';
+  document.getElementById('gapChartTitle').textContent = mode==='down' ? 'Top 10 Gap-Down Opens · decomposed' : 'Top 10 Gap-Up Opens · decomposed';
+  initGapChart();
+}
+
+function initGapChart(hoverI) {
+  const wrap = gapCanvas.parentElement;
+  gW = wrap.clientWidth; gH = wrap.clientHeight;
+  gapCanvas.width = gW*devicePixelRatio; gapCanvas.height = gH*devicePixelRatio;
+  gapCanvas.style.width = gW+'px'; gapCanvas.style.height = gH+'px';
+  gCtx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  gCW = gW-GPAD.left-GPAD.right; gCH = gH-GPAD.top-GPAD.bottom;
+  drawGaps(hoverI);
+}
+
+function drawGaps(hoverI) {
+  const data = gapMode==='down' ? gapDowns : gapUps;
+  gCtx.clearRect(0,0,gW,gH);
+  gapBarRects = [];
+
+  // scale: symmetric around values
+  let allVals = [];
+  data.forEach(d => { allVals.push(d.gap, d.intra, d.dod, d.gap+d.intra); });
+  const maxAbs = Math.max(...allVals.map(Math.abs)) * 1.15;
+  const gsy = v => GPAD.top + (1-(v+maxAbs)/(2*maxAbs))*gCH;
+
+  // zero line
+  gCtx.strokeStyle='rgba(20,30,50,0.2)'; gCtx.lineWidth=1;
+  gCtx.beginPath(); gCtx.moveTo(GPAD.left,gsy(0)); gCtx.lineTo(gW-GPAD.right,gsy(0)); gCtx.stroke();
+
+  // grid
+  const step = maxAbs>8 ? 4 : 2;
+  for (let g=-Math.floor(maxAbs); g<=Math.floor(maxAbs); g+=step) {
+    if (g===0) continue;
+    const y = gsy(g);
+    gCtx.strokeStyle='rgba(20,30,50,0.05)';
+    gCtx.beginPath(); gCtx.moveTo(GPAD.left,y); gCtx.lineTo(gW-GPAD.right,y); gCtx.stroke();
+    gCtx.fillStyle='#98a1b3'; gCtx.font='700 9px Courier New,monospace'; gCtx.textAlign='right';
+    gCtx.fillText((g>0?'+':'')+g+'%', GPAD.left-6, y+3);
+  }
+  gCtx.fillStyle='#98a1b3'; gCtx.textAlign='right';
+  gCtx.fillText('0%', GPAD.left-6, gsy(0)+3);
+
+  const n = data.length;
+  const slotW = gCW/n;
+  const groupW = Math.min(slotW*0.62, 46);
+  const barW = groupW/2;
+
+  data.forEach((d,i) => {
+    const cx = GPAD.left + slotW*i + slotW/2;
+    const gapX = cx - barW;
+    const intraX = cx;
+    const dim = hoverI!==undefined && hoverI!==i;
+    gCtx.globalAlpha = dim ? 0.3 : 1;
+
+    // gap bar (from 0)
+    gCtx.fillStyle = '#d64550';
+    if (gapMode==='up') gCtx.fillStyle = '#0f9960';
+    const gy0 = gsy(0), gy1 = gsy(d.gap);
+    gCtx.beginPath();
+    gCtx.roundRect(gapX, Math.min(gy0,gy1), barW-2, Math.abs(gy1-gy0), 2);
+    gCtx.fill();
+
+    // intraday bar (from 0)
+    gCtx.fillStyle = '#e8a33d';
+    const iy1 = gsy(d.intra);
+    gCtx.beginPath();
+    gCtx.roundRect(intraX, Math.min(gy0,iy1), barW-2, Math.abs(iy1-gy0), 2);
+    gCtx.fill();
+
+    // full-day diamond marker
+    gCtx.fillStyle = '#1a2233';
+    const dy = gsy(d.dod);
+    gCtx.save();
+    gCtx.translate(cx, dy);
+    gCtx.rotate(Math.PI/4);
+    gCtx.fillRect(-3.5,-3.5,7,7);
+    gCtx.restore();
+
+    // date label
+    gCtx.globalAlpha = dim ? 0.4 : 1;
+    gCtx.fillStyle = '#5a6579';
+    gCtx.font = '700 8px Courier New,monospace';
+    gCtx.textAlign = 'center';
+    gCtx.save();
+    gCtx.translate(cx, gH-8);
+    if (gW < 640) { gCtx.rotate(-Math.PI/5); gCtx.textAlign='right'; }
+    gCtx.fillText(d.date.substring(2), 0, 0);
+    gCtx.restore();
+
+    gCtx.globalAlpha = 1;
+    gapBarRects.push({x: cx-slotW/2, w: slotW, i});
+  });
+}
+
+function gapHover(clientX) {
+  const rect = gapCanvas.getBoundingClientRect();
+  const mx = clientX - rect.left;
+  const hit = gapBarRects.find(r => mx >= r.x && mx < r.x + r.w);
+  if (!hit) return;
+  drawGaps(hit.i);
+  const data = gapMode==='down' ? gapDowns : gapUps;
+  const d = data[hit.i];
+  const f = v => (v>=0?'+':'')+v.toFixed(2)+'%';
+
+  if (isMobile()) {
+    const info = document.getElementById('gapInfo');
+    info.classList.add('visible');
+    document.getElementById('giDate').textContent = d.date;
+    const v = document.getElementById('giDod');
+    v.textContent = f(d.dod)+' full day';
+    v.style.color = d.dod<0 ? 'var(--red)' : 'var(--green)';
+    document.getElementById('giDetail').textContent = 'Gap '+f(d.gap)+' · Intraday '+f(d.intra)+' · '+d.prevClose.toLocaleString()+' → open '+d.open.toLocaleString()+' → close '+d.close.toLocaleString();
+  } else {
+    const tip = document.getElementById('gapTip');
+    document.getElementById('gtDate').textContent = d.date;
+    const dodEl = document.getElementById('gtDod');
+    dodEl.textContent = f(d.dod)+' full day';
+    dodEl.style.color = d.dod<0 ? '#ff8a93' : '#5ee0a8';
+    const gapEl = document.getElementById('gtGap');
+    gapEl.textContent = 'Overnight gap: '+f(d.gap);
+    gapEl.className = 'tip-sub '+(d.gap<0?'neg':'pos');
+    const intraEl = document.getElementById('gtIntra');
+    intraEl.textContent = 'Intraday: '+f(d.intra);
+    intraEl.className = 'tip-sub '+(d.intra<0?'neg':'pos');
+    document.getElementById('gtLevels').textContent = d.prevClose.toLocaleString()+' → open '+d.open.toLocaleString()+' → close '+d.close.toLocaleString();
+    const barCenter = hit.x + hit.w/2;
+    let left = barCenter+14; if (left+230 > gW) left = barCenter-244;
+    tip.style.left = left+'px';
+    tip.style.top = '8px';
+    tip.style.opacity = 1;
+  }
+}
+
+gapCanvas.addEventListener('mousemove', e => gapHover(e.clientX));
+gapCanvas.addEventListener('mouseleave', () => { document.getElementById('gapTip').style.opacity=0; drawGaps(); });
+gapCanvas.addEventListener('touchstart', e => gapHover(e.touches[0].clientX), {passive:true});
+gapCanvas.addEventListener('touchmove', e => gapHover(e.touches[0].clientX), {passive:true});
+
 window.addEventListener('resize', () => {
   if (document.getElementById('view-overview').classList.contains('active')) initMain();
   if (document.getElementById('view-drawdowns').classList.contains('active')) initDDChart();
+  if (document.getElementById('view-gaps').classList.contains('active')) initGapChart();
 });
 
 initMain();
