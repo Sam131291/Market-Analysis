@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>NDX · 20-Year Shock Analysis</title>
+<title>NDX · 20-Year Deep Dive</title>
 <style>
   :root {
-    --bg:#0a0c10; --bg2:#111318; --surface:#1d2129;
-    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
-    --text:#e8eaf0; --text2:#8b92a8; --text3:#555e72;
-    --green:#22c97a; --green-dim:rgba(34,201,122,0.1); --green-border:rgba(34,201,122,0.28);
-    --red:#f04a5a; --red-dim:rgba(240,74,90,0.1); --red-border:rgba(240,74,90,0.28);
-    --accent:#3d9bff; --accent-dim:rgba(61,155,255,0.1);
+    --bg:#f7f8fa; --bg2:#ffffff; --surface:#eef1f5;
+    --border:rgba(20,30,50,0.08); --border2:rgba(20,30,50,0.16);
+    --text:#1a2233; --text2:#5a6579; --text3:#98a1b3;
+    --green:#0f9960; --green-dim:rgba(15,153,96,0.08); --green-border:rgba(15,153,96,0.25);
+    --red:#d64550; --red-dim:rgba(214,69,80,0.07); --red-border:rgba(214,69,80,0.25);
+    --accent:#2472c8; --accent-dim:rgba(36,114,200,0.07);
     --mono:'Courier New',Courier,monospace;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --shadow:0 1px 3px rgba(20,30,50,0.06), 0 4px 14px rgba(20,30,50,0.04);
   }
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
@@ -22,101 +23,122 @@
   @media(min-width:640px){.page{padding:44px 28px 72px}}
 
   /* HEADER */
-  header{margin-bottom:32px}
-  .eyebrow{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}
-  .hero-title{font-family:var(--sans);font-weight:800;font-size:clamp(40px,12vw,88px);line-height:.95;letter-spacing:-.02em;margin-bottom:14px}
+  header{margin-bottom:28px}
+  .eyebrow{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px;font-weight:700}
+  .hero-title{font-weight:800;font-size:clamp(36px,10vw,72px);line-height:.98;letter-spacing:-.025em;margin-bottom:12px;color:var(--text)}
   .hero-title span{color:var(--accent)}
-  .header-sub{font-size:clamp(13px,3.5vw,15px);color:var(--text2);line-height:1.65;max-width:520px;margin-bottom:24px}
+  .header-sub{font-size:clamp(13px,3.5vw,15px);color:var(--text2);line-height:1.65;max-width:560px;margin-bottom:22px}
 
   /* KPI */
   .kpi-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
   @media(min-width:480px){.kpi-strip{grid-template-columns:repeat(3,1fr)}}
   @media(min-width:768px){.kpi-strip{grid-template-columns:repeat(6,1fr);gap:10px}}
-  .kpi-card{background:var(--surface);border:.5px solid var(--border);border-radius:10px;padding:11px 13px}
-  .kpi-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;line-height:1.4}
-  .kpi-value{font-family:var(--mono);font-size:clamp(14px,3.5vw,18px);font-weight:500;color:var(--text);line-height:1}
+  .kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+  .kpi-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;line-height:1.4;font-weight:700}
+  .kpi-value{font-family:var(--mono);font-size:clamp(14px,3.5vw,18px);font-weight:700;color:var(--text);line-height:1}
   .kpi-value.pos{color:var(--green)}.kpi-value.neg{color:var(--red)}
 
-  /* CHART */
-  .chart-section{background:var(--bg2);border:.5px solid var(--border);border-radius:14px;padding:18px 14px 14px;margin-bottom:28px}
-  @media(min-width:640px){.chart-section{padding:22px 22px 16px}}
-  .chart-header{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
-  @media(min-width:540px){.chart-header{flex-direction:row;justify-content:space-between;align-items:center}}
-  .chart-title{font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:.07em;text-transform:uppercase}
-  .legend{display:flex;gap:12px;font-family:var(--mono);font-size:10px;flex-wrap:wrap}
-  .legend-item{display:flex;align-items:center;gap:5px;color:var(--text3)}
-  .legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-  .legend-dot.line{background:var(--accent)}.legend-dot.gain{background:var(--green)}.legend-dot.loss{background:var(--red)}
+  /* NAV TABS */
+  .nav-tabs{display:flex;gap:6px;margin:26px 0 22px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .nav-tab{font-family:var(--sans);font-size:13px;font-weight:600;padding:9px 18px;border-radius:10px;cursor:pointer;color:var(--text2);border:1px solid var(--border);background:var(--bg2);transition:all .15s;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
+  .nav-tab:hover{border-color:var(--border2);color:var(--text)}
+  .nav-tab.active{background:var(--text);color:#fff;border-color:var(--text)}
 
-  /* touch tooltip */
-  .touch-tooltip{display:none;background:var(--surface);border:.5px solid var(--border2);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-family:var(--mono)}
-  .touch-tooltip.visible{display:block}
-  .tt-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-  .tt-date-m{font-size:11px;color:var(--text3)}
-  .tt-val-m{font-size:16px;font-weight:500;color:var(--text)}
-  .tt-chg-m{font-size:11px;margin-top:3px}
-  .tt-chg-m.pos{color:var(--green)}.tt-chg-m.neg{color:var(--red)}
-  .tt-event-m{font-size:11px;color:var(--accent);margin-top:6px;line-height:1.45;border-top:.5px solid var(--border);padding-top:6px}
+  .view{display:none;animation:fadeIn .25s ease}
+  .view.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-  .chart-wrap{position:relative;width:100%;height:clamp(220px,44vw,370px)}
-  canvas{display:block;width:100%!important}
+  /* PANEL */
+  .panel{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px 16px;margin-bottom:20px;box-shadow:var(--shadow)}
+  @media(min-width:640px){.panel{padding:24px 24px}}
+  .panel-header{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+  @media(min-width:540px){.panel-header{flex-direction:row;justify-content:space-between;align-items:center}}
+  .panel-title{font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+  .legend{display:flex;gap:14px;font-family:var(--mono);font-size:10px;flex-wrap:wrap}
+  .legend-item{display:flex;align-items:center;gap:5px;color:var(--text3);font-weight:600}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .ld-line{background:var(--accent)}.ld-gain{background:var(--green)}.ld-loss{background:var(--red)}.ld-decline{background:var(--red)}.ld-recovery{background:var(--green)}
 
-  /* desktop tooltip */
-  .custom-tooltip{position:absolute;background:var(--surface);border:.5px solid var(--border2);border-radius:10px;padding:11px 15px;pointer-events:none;opacity:0;transition:opacity .12s;min-width:195px;max-width:230px;z-index:10;font-family:var(--mono)}
-  .tt-date{font-size:11px;color:var(--text3);margin-bottom:5px}
-  .tt-val{font-size:17px;font-weight:500;color:var(--text)}
-  .tt-chg{font-size:12px;margin-top:3px}
-  .tt-chg.pos{color:var(--green)}.tt-chg.neg{color:var(--red)}
-  .tt-event{font-size:11px;color:var(--accent);margin-top:6px;line-height:1.4;border-top:.5px solid var(--border);padding-top:6px}
+  .chart-wrap{position:relative;width:100%;height:clamp(220px,44vw,360px)}
+  canvas{display:block;width:100%!important;touch-action:pan-y}
 
-  /* EVENTS */
-  .events-header{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
-  @media(min-width:540px){.events-header{flex-direction:row;align-items:center}}
-  .events-title{font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;flex:1}
-  .tab-group{display:flex;background:var(--surface);border-radius:8px;padding:3px;gap:2px;border:.5px solid var(--border);align-self:flex-start}
-  .tab{font-family:var(--mono);font-size:10px;padding:6px 11px;border-radius:6px;cursor:pointer;color:var(--text3);transition:all .15s;border:none;background:transparent;letter-spacing:.04em;white-space:nowrap;-webkit-tap-highlight-color:transparent}
-  .tab.active-gain{background:var(--green-dim);color:var(--green);border:.5px solid var(--green-border)}
-  .tab.active-loss{background:var(--red-dim);color:var(--red);border:.5px solid var(--red-border)}
-  .tab.active-all{background:var(--accent-dim);color:var(--accent);border:.5px solid rgba(61,155,255,.3)}
+  /* tooltip */
+  .tip{position:absolute;background:var(--text);color:#fff;border-radius:10px;padding:10px 14px;pointer-events:none;opacity:0;transition:opacity .12s;min-width:180px;max-width:240px;z-index:10;font-family:var(--mono);box-shadow:0 4px 16px rgba(20,30,50,.25)}
+  .tip-date{font-size:10px;opacity:.6;margin-bottom:4px}
+  .tip-val{font-size:16px;font-weight:700}
+  .tip-sub{font-size:11px;margin-top:3px}
+  .tip-sub.pos{color:#5ee0a8}.tip-sub.neg{color:#ff8a93}
+  .tip-event{font-size:10px;margin-top:6px;line-height:1.4;border-top:1px solid rgba(255,255,255,.15);padding-top:6px;color:#8fc2ff}
 
-  /* CARDS */
-  .cards-grid{display:grid;grid-template-columns:1fr;gap:10px}
-  @media(min-width:620px){.cards-grid{grid-template-columns:repeat(2,1fr);gap:12px}}
-  .event-card{background:var(--bg2);border:.5px solid var(--border);border-radius:14px;padding:16px 16px 16px 20px;position:relative;overflow:hidden;transition:all .2s;animation:fadeSlide .3s ease both;-webkit-tap-highlight-color:transparent}
-  .event-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
-  .event-card.gain::before{background:var(--green)}.event-card.loss::before{background:var(--red)}
-  @media(hover:hover){
-    .event-card:hover{border-color:var(--border2);transform:translateY(-2px)}
-    .event-card.gain:hover{background:var(--green-dim);border-color:var(--green-border)}
-    .event-card.loss:hover{background:var(--red-dim);border-color:var(--red-border)}
-  }
-  @keyframes fadeSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .card-rank{font-weight:800;font-size:50px;position:absolute;right:12px;top:6px;opacity:.07;line-height:1;pointer-events:none}
-  .card-rank.gain{color:var(--green)}.card-rank.loss{color:var(--red)}
-  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px}
-  .card-date{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.05em}
-  .card-era{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0}
-  .card-era.gain{background:var(--green-dim);color:var(--green);border:.5px solid var(--green-border)}
-  .card-era.loss{background:var(--red-dim);color:var(--red);border:.5px solid var(--red-border)}
-  .card-move{font-family:var(--mono);font-size:clamp(22px,5.5vw,28px);font-weight:500;line-height:1;margin-bottom:3px}
-  .card-move.gain{color:var(--green)}.card-move.loss{color:var(--red)}
-  .card-pts{font-family:var(--mono);font-size:10px;color:var(--text2);margin-bottom:9px}
-  .card-catalyst{font-size:clamp(12px,3.3vw,14px);font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.45;padding-right:28px}
-  .card-detail{font-size:clamp(11px,2.8vw,13px);color:var(--text2);line-height:1.65}
+  /* mobile info strip below charts */
+  .info-strip{display:none;background:var(--surface);border-radius:10px;padding:10px 14px;margin-top:10px;font-family:var(--mono)}
+  .info-strip.visible{display:block}
+  .is-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .is-date{font-size:10px;color:var(--text3)}
+  .is-val{font-size:15px;font-weight:700;color:var(--text)}
+  .is-chg{font-size:11px;margin-top:2px;font-weight:600}
+  .is-chg.pos{color:var(--green)}.is-chg.neg{color:var(--red)}
+  .is-event{font-size:10px;color:var(--accent);margin-top:5px;line-height:1.45;border-top:1px solid var(--border);padding-top:5px}
 
-  /* FOOTER */
-  footer{margin-top:52px;padding-top:20px;border-top:.5px solid var(--border);display:flex;flex-direction:column;gap:5px}
+  /* DROPS TABLE */
+  .drop-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);-webkit-tap-highlight-color:transparent}
+  .drop-row:hover{border-color:var(--red-border);background:var(--red-dim)}
+  .drop-row.expanded{border-color:var(--red-border);background:var(--red-dim)}
+  .drop-rank{font-weight:800;font-size:20px;color:var(--red);opacity:.35;width:32px;flex-shrink:0;text-align:center}
+  .drop-main{flex:1;min-width:0}
+  .drop-date{font-family:var(--mono);font-size:11px;color:var(--text3);font-weight:600}
+  .drop-catalyst{font-size:13px;font-weight:600;color:var(--text);margin-top:2px;line-height:1.35}
+  .drop-pct{font-family:var(--mono);font-size:clamp(16px,4vw,20px);font-weight:700;color:var(--red);flex-shrink:0}
+  .drop-detail{display:none;padding:4px 16px 16px 60px;font-size:13px;color:var(--text2);line-height:1.65;animation:fadeIn .2s ease}
+  .drop-detail.open{display:block}
+  .drop-meta{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:8px;font-weight:600}
+  .chevron{width:16px;height:16px;flex-shrink:0;transition:transform .2s;color:var(--text3)}
+  .drop-row.expanded .chevron{transform:rotate(180deg)}
+
+  /* DRAWDOWN SELECTOR */
+  .dd-selector{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin-bottom:16px;-webkit-overflow-scrolling:touch}
+  .dd-chip{flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all .15s;min-width:130px;box-shadow:var(--shadow);-webkit-tap-highlight-color:transparent}
+  .dd-chip:hover{border-color:var(--border2)}
+  .dd-chip.active{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 0 0 1px var(--accent)}
+  .dd-chip-dd{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--red)}
+  .dd-chip-label{font-size:10px;color:var(--text2);margin-top:2px;line-height:1.4;font-weight:600}
+  .dd-chip-year{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:2px;font-weight:700}
+
+  /* DD DETAIL STATS */
+  .dd-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+  @media(min-width:640px){.dd-stats{grid-template-columns:repeat(5,1fr);gap:10px}}
+  .dd-stat{background:var(--surface);border-radius:10px;padding:10px 12px}
+  .dd-stat-label{font-family:var(--mono);font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:4px}
+  .dd-stat-val{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text)}
+  .dd-stat-val.neg{color:var(--red)}.dd-stat-val.pos{color:var(--green)}
+
+  .dd-narrative{font-size:13px;color:var(--text2);line-height:1.7;background:var(--surface);border-radius:12px;padding:14px 16px;margin-top:14px}
+  .dd-narrative strong{color:var(--text)}
+
+  /* STATS VIEW */
+  .stats-grid{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:768px){.stats-grid{grid-template-columns:1fr 1fr}}
+  .stat-block{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+  .stat-block-title{font-family:var(--mono);font-size:10px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:12px}
+  .fact-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--border)}
+  .fact-row:last-child{border-bottom:none}
+  .fact-label{font-size:12px;color:var(--text2)}
+  .fact-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)}
+  .fact-val.pos{color:var(--green)}.fact-val.neg{color:var(--red)}
+
+  footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px}
   @media(min-width:540px){footer{flex-direction:row;justify-content:space-between;align-items:center}}
-  .footer-txt{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.05em}
-  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--surface);border-radius:2px}
+  .footer-txt{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:.05em;font-weight:600}
+  ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 </style>
 </head>
 <body>
 <div class="page">
+
   <header>
     <div class="eyebrow">Nasdaq-100 · NDX · 2005 – 2026</div>
-    <div class="hero-title">20 YEARS<br>OF <span>SHOCK</span></div>
-    <p class="header-sub">Every extreme single-day move in the NDX, mapped against the crises, panics, and policy pivots that caused them.</p>
+    <div class="hero-title">20 YEARS OF <span>SHOCK</span></div>
+    <p class="header-sub">A deep dive into every extreme move, crash, and recovery in the NDX — mapped against the crises and policy pivots that caused them.</p>
     <div class="kpi-strip">
       <div class="kpi-card"><div class="kpi-label">Start Jan 2005</div><div class="kpi-value">1,603</div></div>
       <div class="kpi-card"><div class="kpi-label">Now May 2026</div><div class="kpi-value">29,580</div></div>
@@ -127,41 +149,117 @@
     </div>
   </header>
 
-  <div class="chart-section">
-    <div class="chart-header">
-      <div class="chart-title">NDX Monthly Close · Jan 2005 – May 2026</div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot line"></div>NDX</div>
-        <div class="legend-item"><div class="legend-dot gain"></div>Top 5 Gains</div>
-        <div class="legend-item"><div class="legend-dot loss"></div>Top 5 Losses</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('overview',this)">Overview</button>
+    <button class="nav-tab" onclick="switchView('drops',this)">Top 10 Drops</button>
+    <button class="nav-tab" onclick="switchView('drawdowns',this)">Worst Drawdowns</button>
+    <button class="nav-tab" onclick="switchView('stats',this)">Market Stats</button>
+  </div>
+
+  <!-- ═══ OVERVIEW ═══ -->
+  <div class="view active" id="view-overview">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">NDX Monthly Close · Jan 2005 – May 2026</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot ld-line"></div>NDX</div>
+          <div class="legend-item"><div class="legend-dot ld-loss"></div>Top 10 Drop Days</div>
+        </div>
       </div>
-    </div>
-    <div class="touch-tooltip" id="touchTooltip">
-      <div class="tt-row"><span class="tt-date-m" id="ttDateM"></span><span class="tt-val-m" id="ttValM"></span></div>
-      <div class="tt-chg-m" id="ttChgM"></div>
-      <div class="tt-event-m" id="ttEventM" style="display:none"></div>
-    </div>
-    <div class="chart-wrap">
-      <canvas id="ndxChart" aria-label="NDX monthly close 2005–2026"></canvas>
-      <div class="custom-tooltip" id="tooltip">
-        <div class="tt-date" id="ttDate"></div>
-        <div class="tt-val" id="ttVal"></div>
-        <div class="tt-chg" id="ttChg"></div>
-        <div class="tt-event" id="ttEvent" style="display:none"></div>
+      <div class="chart-wrap">
+        <canvas id="mainChart"></canvas>
+        <div class="tip" id="mainTip">
+          <div class="tip-date" id="mtDate"></div>
+          <div class="tip-val" id="mtVal"></div>
+          <div class="tip-sub" id="mtChg"></div>
+          <div class="tip-event" id="mtEvent" style="display:none"></div>
+        </div>
+      </div>
+      <div class="info-strip" id="mainInfo">
+        <div class="is-row"><span class="is-date" id="miDate"></span><span class="is-val" id="miVal"></span></div>
+        <div class="is-chg" id="miChg"></div>
+        <div class="is-event" id="miEvent" style="display:none"></div>
       </div>
     </div>
   </div>
 
-  <div class="events-section">
-    <div class="events-header">
-      <div class="events-title">Significant single-day events</div>
-      <div class="tab-group">
-        <button class="tab active-all" onclick="filterCards('all',this)">All 10</button>
-        <button class="tab" onclick="filterCards('gain',this)">Top 5 Gains</button>
-        <button class="tab" onclick="filterCards('loss',this)">Top 5 Losses</button>
+  <!-- ═══ TOP 10 DROPS ═══ -->
+  <div class="view" id="view-drops">
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-title" style="margin-bottom:6px">The 10 worst single days in 20 years</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.6">Tap any row to expand the full story. 7 of the 10 worst days came from just two events — the 2008 financial crisis and the COVID crash of March 2020.</p>
+    </div>
+    <div id="dropsList"></div>
+  </div>
+
+  <!-- ═══ DRAWDOWNS ═══ -->
+  <div class="view" id="view-drawdowns">
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-title" style="margin-bottom:6px">The 10 deepest peak-to-trough declines</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.6">Select any drawdown to see the full daily path — the decline to the bottom and the climb back to breakeven. Trading days, not calendar days.</p>
+    </div>
+    <div class="dd-selector" id="ddSelector"></div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title" id="ddChartTitle">Drawdown Path</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot ld-decline"></div>Decline</div>
+          <div class="legend-item"><div class="legend-dot ld-recovery"></div>Recovery</div>
+        </div>
+      </div>
+      <div class="dd-stats" id="ddStats"></div>
+      <div class="chart-wrap" style="height:clamp(200px,40vw,320px)">
+        <canvas id="ddChart"></canvas>
+        <div class="tip" id="ddTip">
+          <div class="tip-date" id="dtDay"></div>
+          <div class="tip-val" id="dtPct"></div>
+        </div>
+      </div>
+      <div class="info-strip" id="ddInfo">
+        <div class="is-row"><span class="is-date" id="diDay"></span><span class="is-val" id="diPct"></span></div>
+      </div>
+      <div class="dd-narrative" id="ddNarrative"></div>
+    </div>
+  </div>
+
+  <!-- ═══ STATS ═══ -->
+  <div class="view" id="view-stats">
+    <div class="stats-grid">
+      <div class="stat-block">
+        <div class="stat-block-title">Daily Behaviour · 5,375 Sessions</div>
+        <div class="fact-row"><span class="fact-label">Positive days</span><span class="fact-val pos">2,978 (55.4%)</span></div>
+        <div class="fact-row"><span class="fact-label">Negative days</span><span class="fact-val neg">2,397 (44.6%)</span></div>
+        <div class="fact-row"><span class="fact-label">Average daily move (absolute)</span><span class="fact-val">0.95%</span></div>
+        <div class="fact-row"><span class="fact-label">Daily volatility (std dev)</span><span class="fact-val">1.39%</span></div>
+        <div class="fact-row"><span class="fact-label">Days with ±3% or bigger move</span><span class="fact-val">223</span></div>
+        <div class="fact-row"><span class="fact-label">Days with ±5% or bigger move</span><span class="fact-val">40</span></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-block-title">Volatility Regimes · Annualized</div>
+        <div class="fact-row"><span class="fact-label">Calmest year — 2017</span><span class="fact-val pos">10.3%</span></div>
+        <div class="fact-row"><span class="fact-label">2008 (Financial Crisis)</span><span class="fact-val neg">41.9%</span></div>
+        <div class="fact-row"><span class="fact-label">2020 (COVID)</span><span class="fact-val neg">36.4%</span></div>
+        <div class="fact-row"><span class="fact-label">2022 (Rate Hikes)</span><span class="fact-val neg">32.5%</span></div>
+        <div class="fact-row"><span class="fact-label">2025 (Trade War)</span><span class="fact-val">23.7%</span></div>
+        <div class="fact-row"><span class="fact-label">20-year average</span><span class="fact-val">~20%</span></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-block-title">Crash Concentration</div>
+        <div class="fact-row"><span class="fact-label">Top-10 drop days from GFC (2008)</span><span class="fact-val">6 of 10</span></div>
+        <div class="fact-row"><span class="fact-label">Top-10 drop days from COVID (2020)</span><span class="fact-val">3 of 10</span></div>
+        <div class="fact-row"><span class="fact-label">Worst month ever</span><span class="fact-val neg">Oct 2008 (−16.4%)</span></div>
+        <div class="fact-row"><span class="fact-label">Fastest 28% decline</span><span class="fact-val neg">22 days (COVID)</span></div>
+        <div class="fact-row"><span class="fact-label">Longest recovery</span><span class="fact-val">799 days (GFC)</span></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-block-title">The Long Game</div>
+        <div class="fact-row"><span class="fact-label">Total return 2005–2026</span><span class="fact-val pos">+1,745%</span></div>
+        <div class="fact-row"><span class="fact-label">Compound annual growth</span><span class="fact-val pos">~14.6%/yr</span></div>
+        <div class="fact-row"><span class="fact-label">$10,000 invested Jan 2005</span><span class="fact-val pos">→ $184,500</span></div>
+        <div class="fact-row"><span class="fact-label">Number of −20%+ crashes survived</span><span class="fact-val">5</span></div>
+        <div class="fact-row"><span class="fact-label">Every crash eventually recovered</span><span class="fact-val pos">100%</span></div>
       </div>
     </div>
-    <div class="cards-grid" id="cardsGrid"></div>
   </div>
 
   <footer>
@@ -171,239 +269,381 @@
 </div>
 
 <script>
-// ── DATA ─────────────────────────────────────────────────────────────────────
+// ═══ DATA ════════════════════════════════════════════════════════════════════
 const ML = ["2005-01","2005-02","2005-03","2005-04","2005-05","2005-06","2005-07","2005-08","2005-09","2005-10","2005-11","2005-12","2006-01","2006-02","2006-03","2006-04","2006-05","2006-06","2006-07","2006-08","2006-09","2006-10","2006-11","2006-12","2007-01","2007-02","2007-03","2007-04","2007-05","2007-06","2007-07","2007-08","2007-09","2007-10","2007-11","2007-12","2008-01","2008-02","2008-03","2008-04","2008-05","2008-06","2008-07","2008-08","2008-09","2008-10","2008-11","2008-12","2009-01","2009-02","2009-03","2009-04","2009-05","2009-06","2009-07","2009-08","2009-09","2009-10","2009-11","2009-12","2010-01","2010-02","2010-03","2010-04","2010-05","2010-06","2010-07","2010-08","2010-09","2010-10","2010-11","2010-12","2011-01","2011-02","2011-03","2011-04","2011-05","2011-06","2011-07","2011-08","2011-09","2011-10","2011-11","2011-12","2012-01","2012-02","2012-03","2012-04","2012-05","2012-06","2012-07","2012-08","2012-09","2012-10","2012-11","2012-12","2013-01","2013-02","2013-03","2013-04","2013-05","2013-06","2013-07","2013-08","2013-09","2013-10","2013-11","2013-12","2014-01","2014-02","2014-03","2014-04","2014-05","2014-06","2014-07","2014-08","2014-09","2014-10","2014-11","2014-12","2015-01","2015-02","2015-03","2015-04","2015-05","2015-06","2015-07","2015-08","2015-09","2015-10","2015-11","2015-12","2016-01","2016-02","2016-03","2016-04","2016-05","2016-06","2016-07","2016-08","2016-09","2016-10","2016-11","2016-12","2017-01","2017-02","2017-03","2017-04","2017-05","2017-06","2017-07","2017-08","2017-09","2017-10","2017-11","2017-12","2018-01","2018-02","2018-03","2018-04","2018-05","2018-06","2018-07","2018-08","2018-09","2018-10","2018-11","2018-12","2019-01","2019-02","2019-03","2019-04","2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-11","2019-12","2020-01","2020-02","2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05"];
 const MV = [1519.63,1511.02,1482.53,1420.79,1542.63,1493.52,1605.14,1581.71,1601.66,1579.18,1672.56,1645.2,1710.75,1670.57,1703.66,1700.71,1579.58,1575.23,1509.43,1579.73,1654.13,1732.54,1791.25,1756.9,1792.28,1761.65,1772.36,1867.75,1928.19,1934.1,1932.06,1988.73,2091.11,2238.98,2089.1,2084.93,1841.42,1745.27,1781.93,1917.7,2032.57,1837.09,1849.15,1872.54,1594.63,1334.78,1185.75,1211.65,1180.25,1116.99,1237.01,1394.33,1435.57,1477.25,1603.36,1625.19,1718.99,1667.13,1767.43,1860.31,1741.04,1818.68,1958.34,2000.63,1852.39,1739.14,1864.0,1767.43,1998.04,2124.45,2117.33,2217.86,2281.91,2350.99,2338.99,2404.08,2372.54,2325.07,2362.81,2241.01,2139.18,2360.08,2295.2,2277.83,2467.95,2623.1,2755.27,2723.68,2524.87,2615.72,2642.53,2772.24,2799.19,2647.92,2677.88,2660.93,2731.53,2738.58,2818.69,2887.44,2981.76,2909.6,3090.19,3073.81,3218.2,3377.73,3487.82,3592.0,3521.92,3696.1,3595.74,3582.02,3736.82,3849.48,3892.5,4082.56,4049.44,4158.21,4337.78,4236.28,4148.43,4440.67,4333.69,4414.25,4508.25,4396.76,4588.91,4274.58,4181.06,4648.83,4664.51,4593.27,4279.17,4201.12,4483.66,4341.3,4523.89,4417.7,4730.23,4771.05,4875.7,4801.27,4810.81,4863.62,5116.77,5330.31,5436.23,5583.53,5788.8,5646.92,5880.33,5988.6,5979.3,6248.56,6365.56,6396.42,6949.99,6854.42,6581.13,6605.57,6967.73,7040.8,7231.98,7654.55,7627.65,6967.1,6949.01,6329.96,6906.84,7097.53,7378.77,7781.46,7127.96,7671.07,7848.78,7691.0,7749.45,8083.83,8403.68,8733.07,8991.51,8461.83,7813.5,9000.51,9555.52,10156.85,10905.88,12110.7,11418.06,11052.95,12268.32,12888.28,12925.38,12909.44,13091.44,13860.76,13686.51,14554.8,14959.9,15582.51,14689.62,15850.47,16135.92,16320.08,14930.05,14237.81,14838.49,12854.8,12642.1,11503.72,12947.97,12272.03,10971.22,11405.57,12030.06,10939.76,12101.93,12042.12,13181.35,13245.99,14254.09,15179.21,15757.0,15501.07,14715.24,14409.78,15947.87,16825.93,17137.24,18043.85,18254.69,17440.69,18536.65,19682.87,19362.43,19574.64,20060.69,19890.42,20930.37,21012.17,21478.05,20884.41,19278.45,19571.02,21340.99,22679.01,23218.12,23415.42,24679.99,25858.13,25434.89,25249.85,25552.39,24960.04,23740.19,27452.12,29580.3];
 
-const topGains = [
-  {date:'2008-10-13',month:'2008-10',pct:'+12.58',pts:'+159.7',close:1429.54,rank:1,era:'GFC',catalyst:'G7 Emergency Bank Rescue + TARP Capital Injections',detail:'Emergency G7 meeting pledged unlimited bank funding. US Treasury announced the Capital Purchase Program injecting $125B into 9 major banks simultaneously. The most violent single-day rally of the GFC era — a classic oversold snap-back amplified by coordinated global policy action.'},
-  {date:'2025-04-09',month:'2025-04',pct:'+12.02',pts:'+2,054.7',close:19145.06,rank:2,era:'Trade War 2025',catalyst:'Trump 90-Day Tariff Pause — Largest Point Gain in NDX History',detail:'After days of escalating tariffs threatening a full US-China trade war, Trump announced a 90-day pause on most country tariffs while raising China to 145%. Markets had priced in worst-case collapse. +2,054 points is the single largest point gain in 40 years of NDX history.'},
-  {date:'2008-10-28',month:'2008-10',pct:'+10.92',pts:'+127.8',close:1297.57,rank:3,era:'GFC',catalyst:'TARP Deployments Begin + European Bank Recapitalisations',detail:'TARP\'s $700B bailout began deploying into bank equity stakes. European governments announced coordinated bank recapitalisations in France, Germany and the UK. Index had just made multi-year lows — any stabilisation signal triggered violent short-covering.'},
-  {date:'2020-03-13',month:'2020-03',pct:'+10.07',pts:'+731.6',close:7995.26,rank:4,era:'COVID-19',catalyst:'Trump National Emergency + $50B Federal Funds Unlocked',detail:'Trump declared a national emergency unlocking $50B in federal disaster funds. Markets had fallen 30% in 23 sessions. This was the first major relief rally of the COVID crash, though extreme volatility continued for two more weeks.'},
-  {date:'2009-03-10',month:'2009-03',pct:'+6.57',pts:'+68.6',close:1112.44,rank:5,era:'GFC',catalyst:'Citigroup Profit Memo — Markets Signal the GFC Bottom',detail:'Citigroup CEO Vikram Pandit\'s internal memo (which leaked) revealed the bank was profitable in Jan–Feb 2009 — the first signal major banks were not going to zero. NDX had just made a 12-year low at 1,036 on Nov 20, 2008. This session effectively marked the bottom and the start of the multi-year bull run.'}
-];
-const topLosses = [
-  {date:'2020-03-16',month:'2020-03',pct:'−12.19',pts:'−974.9',close:7020.38,rank:1,era:'COVID-19',catalyst:'Fed Cuts to 0% + $700B QE — Markets Sell Off Harder',detail:'The Fed slashed rates to 0–0.25% and launched $700B in QE on a Sunday night — and markets sold off harder. WHO had declared a global pandemic 4 days prior. The single worst NDX session since the GFC, and the largest absolute point loss in the index\'s history at the time.'},
-  {date:'2008-09-29',month:'2008-09',pct:'−10.52',pts:'−175.9',close:1496.15,rank:2,era:'GFC',catalyst:'US House Rejects $700B TARP Bailout Bill 228–205',detail:'The House voted down the $700B TARP bailout in a stunning political defeat. Lehman had collapsed 15 days earlier. Credit markets were completely frozen. Peak systemic fear that the entire US financial system could fail.'},
-  {date:'2020-03-12',month:'2020-03',pct:'−9.27',pts:'−742.5',close:7263.65,rank:3,era:'COVID-19',catalyst:'Trump European Travel Ban + Saudi-Russia Oil Price War',detail:'Trump announced a surprise 30-day European travel ban without coordinating with EU allies. Simultaneously Saudi Arabia launched an oil price war — oil fell 25% in one session. Both shocks hit simultaneously. Circuit breakers triggered at the open. The third trading halt that week.'},
-  {date:'2008-10-15',month:'2008-10',pct:'−8.82',pts:'−120.4',close:1244.23,rank:4,era:'GFC',catalyst:'Recession Fears Resurface — Retail Sales Plunge, Banks Miss Earnings',detail:'Despite TARP being signed into law days earlier, retail sales posted their largest monthly decline in 3 years, jobless claims spiked, and major bank earnings began with massive misses. Markets concluded TARP alone could not prevent a deep recession.'},
-  {date:'2008-12-01',month:'2008-12',pct:'−7.98',pts:'−94.6',close:1091.16,rank:5,era:'GFC',catalyst:'NBER Officially Declares US Has Been in Recession Since Dec 2007',detail:'The NBER officially declared the US had been in recession since December 2007 — a full year had already elapsed. Combined with auto industry bailout uncertainty and continued bank losses, markets sold off sharply. This confirmed the recession was far deeper than assumed.'}
+const drops = [
+  {rank:1,date:'2020-03-16',month:'2020-03',pct:-12.19,pts:'−974.9',close:'7,020',catalyst:'Fed Emergency Cut to 0% — Markets Sell Off Harder',detail:'The Fed slashed rates to 0–0.25% and launched $700B in QE on a Sunday night — and markets sold off harder Monday. When the most powerful central bank fires its biggest weapon and the market falls 12% anyway, it signals pure panic: investors concluded the Fed saw something even worse coming. WHO had declared a pandemic 4 days earlier. Circuit breakers halted trading at the open. The worst NDX session since the dot-com era.',era:'COVID-19'},
+  {rank:2,date:'2008-09-29',month:'2008-09',pct:-10.52,pts:'−175.9',close:'1,496',catalyst:'US House Rejects $700B TARP Bailout 228–205',detail:'The House voted down the TARP rescue package in a stunning political defeat that nobody on Wall Street had priced in. Lehman Brothers had collapsed 15 days earlier, credit markets were frozen solid, and the one lifeline everyone expected — government rescue — had just been voted down. Peak systemic fear: the market genuinely priced in the possibility of a full financial system collapse. Congress reversed and passed TARP four days later.',era:'GFC'},
+  {rank:3,date:'2020-03-12',month:'2020-03',pct:-9.27,pts:'−742.5',close:'7,264',catalyst:'Trump European Travel Ban + Oil Price War',detail:'Trump announced a surprise 30-day ban on European travel in a prime-time address — without coordinating with EU allies, and initially misstating that cargo was included. Simultaneously, Saudi Arabia had launched an oil price war against Russia, crushing oil 25% in a day. Two uncorrelated shocks hitting together. Circuit breakers fired at the open for the third time that week.',era:'COVID-19'},
+  {rank:4,date:'2008-10-15',month:'2008-10',pct:-8.82,pts:'−120.4',close:'1,244',catalyst:'Recession Reality Sets In — Retail Sales Collapse',detail:'TARP had been signed into law two weeks earlier, and markets briefly hoped the worst was over. Then October data landed: the biggest monthly retail sales decline in 3 years, spiking jobless claims, and bank earnings that missed catastrophically. Markets realized that saving the banks would not save the economy — a deep recession was coming regardless. The selling resumed with full force.',era:'GFC'},
+  {rank:5,date:'2008-12-01',month:'2008-12',pct:-7.98,pts:'−94.6',close:'1,091',catalyst:'NBER: US Has Been in Recession for a Full Year',detail:'The National Bureau of Economic Research officially declared the recession had started in December 2007 — meaning the economy had already been contracting for 12 months and nobody had officially confirmed it. Combined with the Big Three automakers begging Congress for bailouts and relentless bank losses, the confirmation crushed any remaining hope of a shallow downturn.',era:'GFC'},
+  {rank:6,date:'2020-03-09',month:'2020-03',pct:-6.83,pts:'−582.3',close:'7,948',catalyst:'Black Monday 2020 — Oil Crashes 25%, Italy Locks Down',detail:'Saudi Arabia launched an all-out oil price war after OPEC+ talks with Russia collapsed — crude fell 25%, its worst day since the 1991 Gulf War. The same weekend, Italy placed 16 million people under quarantine, the first Western lockdown. Circuit breakers triggered within minutes of the open — the first market-wide halt since 1997.',era:'COVID-19'},
+  {rank:7,date:'2011-08-08',month:'2011-08',pct:-6.11,pts:'−134.1',close:'2,060',catalyst:'S&P Strips US of AAA Rating for First Time in History',detail:'After the debt ceiling standoff brought the US within days of default, S&P downgraded US sovereign debt from AAA to AA+ after Friday\'s close — the first downgrade in American history. Markets reopened Monday to global panic selling, compounded by the escalating European sovereign debt crisis in Italy and Spain. The "risk-free" asset was suddenly not risk-free.',era:'Debt Ceiling'},
+  {rank:8,date:'2025-04-04',month:'2025-04',pct:-6.07,pts:'−1,123.8',close:'17,398',catalyst:'China Retaliates — Trade War Goes Global',detail:'Two days after Trump\'s "Liberation Day" tariff announcement stunned markets with far higher rates than expected, China retaliated with 34% tariffs on all US goods, export controls on rare earths, and sanctions on US firms. The tit-for-tat confirmed markets\' worst fear: a full-scale trade war with no off-ramp. In point terms (−1,124), this was one of the largest single-day point losses ever.',era:'Trade War 2025'},
+  {rank:9,date:'2008-11-19',month:'2008-11',pct:-5.9,pts:'−68.2',close:'1,088',catalyst:'Citigroup Death Spiral + Auto Bailout Stalls',detail:'Citigroup shares collapsed 23% in a single session as markets lost confidence in the bank\'s survival — four days later the government would rescue it with a $306B package. Meanwhile the Big Three auto CEOs were pilloried in Congress and left without a deal. The NDX closed at its lowest level of the entire crisis the following day: 1,036.',era:'GFC'},
+  {rank:10,date:'2008-10-07',month:'2008-10',pct:-5.76,pts:'−81.3',close:'1,330',catalyst:'Global Contagion — Fed Emergency Commercial Paper Rescue',detail:'Despite TARP passing days earlier, panic went global: Iceland\'s banking system was collapsing, the Fed announced an emergency facility to buy commercial paper directly (bypassing frozen banks entirely), and Bernanke signaled rate cuts. Each emergency measure paradoxically deepened fear — if regulators were this aggressive, how bad was the underlying reality? The index fell 5 of 6 sessions that week.',era:'GFC'}
 ];
 
-const allEvents = [...topGains.map(e=>({...e,type:'gain'})),...topLosses.map(e=>({...e,type:'loss'}))];
+const dds = [{"peakDate":"2007-10-31","peakVal":2239,"troughDate":"2008-11-20","troughVal":1037,"recDate":"2011-01-03","maxDD":-53.7,"daysDown":267,"daysUp":532,"totalDays":799,"troughIdx":267,"name":"Global Financial Crisis","narrative":"<strong>The generational crash.</strong> From the October 2007 peak, the NDX ground lower for 13 months as the subprime crisis metastasized into a full banking collapse — Bear Stearns (March), Lehman (September), and near-failures of Citi and AIG. The trough came Nov 20, 2008 at 1,036 — down 53.7%. The recovery took another <strong>532 trading days (2.1 years)</strong>: the index did not reclaim its 2007 high until January 2011. Total round trip: nearly 800 trading days — over 3 years underwater.","path":[[0,0.0],[12,-8.5],[24,-6.24],[36,-5.68],[48,-12.74],[60,-19.26],[72,-20.16],[84,-22.12],[96,-21.75],[108,-17.55],[120,-14.04],[132,-10.81],[144,-9.82],[156,-11.35],[168,-18.88],[180,-18.72],[192,-15.35],[204,-13.73],[216,-22.37],[228,-25.32],[240,-39.05],[252,-40.42],[264,-48.55],[267,-53.71],[276,-49.63],[288,-46.89],[300,-45.38],[312,-44.8],[324,-44.76],[336,-50.41],[348,-46.98],[360,-43.04],[372,-38.66],[384,-38.48],[396,-35.88],[408,-35.54],[420,-35.4],[432,-30.64],[444,-28.53],[456,-26.99],[468,-24.69],[480,-22.97],[492,-21.65],[504,-25.54],[516,-19.06],[528,-19.97],[540,-17.84],[552,-15.75],[564,-20.9],[576,-19.51],[588,-16.94],[600,-12.93],[612,-11.53],[624,-8.48],[636,-11.76],[648,-17.27],[660,-14.9],[672,-22.81],[684,-18.83],[696,-15.01],[708,-20.71],[720,-15.48],[732,-10.12],[744,-8.24],[756,-4.94],[768,-6.21],[780,-2.2],[792,-0.14],[799,0.68]]},
+{"peakDate":"2021-11-19","peakVal":16573,"troughDate":"2022-12-28","troughVal":10679,"recDate":"2023-12-15","maxDD":-35.6,"daysDown":277,"daysUp":243,"totalDays":520,"troughIdx":277,"name":"2022 Rate Hike Bear Market","narrative":"<strong>The inflation reckoning.</strong> After the everything-rally of 2021, the Fed pivoted hard against 9% inflation with the fastest rate hiking cycle in 40 years. Tech valuations — priced for zero rates — compressed brutally all year. The decline was a grinding 277-day staircase down 35.6%, punctuated by bear market rallies that kept failing. The bottom came in late December 2022; the AI boom (ChatGPT launched Nov 2022) then powered a 243-day recovery to new highs by December 2023.","path":[[0,0.0],[8,-3.52],[16,-3.97],[24,-0.04],[32,-4.88],[40,-9.2],[48,-9.92],[56,-11.27],[64,-18.49],[72,-19.63],[80,-14.81],[88,-8.05],[96,-13.55],[104,-17.21],[112,-21.02],[120,-25.26],[128,-27.93],[136,-23.3],[144,-32.02],[152,-30.59],[160,-29.23],[168,-25.61],[176,-19.68],[184,-17.73],[192,-23.94],[200,-25.66],[208,-28.49],[216,-33.8],[224,-34.92],[232,-31.03],[240,-35.5],[248,-28.37],[256,-30.08],[264,-29.78],[272,-33.19],[277,-35.56],[280,-34.46],[288,-30.36],[296,-27.28],[304,-23.2],[312,-25.43],[320,-27.32],[328,-26.39],[336,-22.97],[344,-21.76],[352,-21.01],[360,-20.08],[368,-19.46],[376,-16.43],[384,-12.23],[392,-9.46],[400,-9.82],[408,-9.22],[416,-6.68],[424,-5.16],[432,-9.32],[440,-8.6],[448,-6.43],[456,-8.27],[464,-12.03],[472,-9.21],[480,-10.8],[488,-13.05],[496,-6.3],[504,-3.45],[512,-4.2],[520,0.3]]},
+{"peakDate":"2020-02-19","peakVal":9719,"troughDate":"2020-03-20","troughVal":6994,"recDate":"2020-06-05","maxDD":-28.0,"daysDown":22,"daysUp":53,"totalDays":75,"troughIdx":22,"name":"COVID-19 Crash","narrative":"<strong>The fastest crash in modern history.</strong> From all-time high to −28% in just <strong>22 trading days</strong> as the world shut down. Four circuit-breaker halts in 8 sessions. Then the Fed unleashed unlimited QE (March 23) and Congress passed the $2T CARES Act — and the recovery was nearly as fast as the crash: 53 days back to breakeven, powered by stay-at-home tech stocks. The full round trip took less than 4 months — the GFC took over 3 years.","path":[[0,0.0],[1,-0.94],[2,-2.8],[3,-6.58],[4,-9.09],[5,-8.69],[6,-13.19],[7,-12.93],[8,-8.65],[9,-11.57],[10,-7.92],[11,-10.77],[12,-12.23],[13,-18.22],[14,-13.85],[15,-17.62],[16,-25.26],[17,-17.73],[18,-27.76],[19,-23.1],[20,-26.17],[21,-25.01],[22,-28.03],[23,-27.9],[24,-22.28],[25,-23.14],[26,-18.74],[27,-21.92],[28,-18.83],[29,-19.6],[30,-22.97],[31,-21.43],[32,-22.54],[33,-16.84],[34,-17.18],[35,-15.32],[36,-15.23],[37,-14.26],[38,-10.56],[39,-11.59],[40,-9.89],[41,-9.12],[42,-10.21],[43,-13.54],[44,-10.85],[45,-11.08],[46,-9.59],[47,-9.07],[48,-10.71],[49,-7.57],[50,-7.39],[51,-10.3],[52,-9.1],[53,-8.11],[54,-7.55],[55,-6.35],[56,-5.13],[57,-4.32],[58,-6.24],[59,-7.39],[60,-6.42],[61,-5.82],[62,-3.98],[63,-4.32],[64,-2.4],[65,-3.51],[66,-3.14],[67,-3.38],[68,-2.85],[69,-3.11],[70,-1.68],[71,-1.23],[72,-0.63],[73,-0.14],[74,-0.92],[75,1.09]]},
+{"peakDate":"2018-08-29","peakVal":7660,"troughDate":"2018-12-24","troughVal":5899,"recDate":"2019-04-17","maxDD":-23.0,"daysDown":80,"daysUp":78,"totalDays":158,"troughIdx":80,"name":"Q4 2018 Rate Panic","narrative":"<strong>The Christmas Eve massacre.</strong> The Fed had hiked rates 8 times and Powell said the balance sheet runoff was on \"autopilot\" — markets read it as a Fed that would tighten into recession. Combined with the escalating US-China tariff fight, the NDX fell 23% in 80 days, bottoming on Christmas Eve 2018 in one of the thinnest, ugliest sessions of the decade. Powell blinked in early January (\"we're listening to markets\") and the index recovered its entire loss in 78 days.","path":[[0,0.0],[2,-0.07],[4,-1.79],[6,-3.0],[8,-1.99],[10,-1.29],[12,-2.94],[14,-2.22],[16,-1.69],[18,-1.27],[20,-0.4],[22,-0.19],[24,-0.3],[26,-3.41],[28,-3.77],[30,-9.09],[32,-7.72],[34,-4.98],[36,-7.22],[38,-7.07],[40,-8.4],[42,-12.35],[44,-9.05],[46,-9.07],[48,-8.76],[50,-6.55],[52,-10.85],[54,-11.62],[56,-10.35],[58,-14.79],[60,-14.79],[62,-12.52],[64,-10.02],[66,-7.81],[68,-10.72],[70,-12.76],[72,-11.7],[74,-13.91],[76,-15.26],[78,-18.5],[80,-22.99],[82,-17.91],[84,-17.37],[86,-19.75],[88,-15.3],[90,-13.83],[92,-13.82],[94,-12.93],[96,-12.29],[98,-13.23],[100,-12.5],[102,-12.57],[104,-11.13],[106,-10.24],[108,-8.31],[110,-9.86],[112,-9.8],[114,-8.41],[116,-7.9],[118,-7.8],[120,-7.44],[122,-7.01],[124,-7.35],[126,-6.65],[128,-7.15],[130,-8.41],[132,-5.99],[134,-5.45],[136,-4.36],[138,-3.65],[140,-4.36],[142,-4.03],[144,-4.43],[146,-2.37],[148,-1.5],[150,-1.06],[152,-1.2],[154,-0.85],[156,-0.41],[158,0.27]]},
+{"peakDate":"2025-02-19","peakVal":22176,"troughDate":"2025-04-08","troughVal":17090,"recDate":"2025-06-24","maxDD":-22.9,"daysDown":34,"daysUp":52,"totalDays":86,"troughIdx":34,"name":"2025 Trade War Crash","narrative":"<strong>The tariff shock.</strong> Markets peaked in February 2025, then slid on trade war rhetoric before the April 2 \"Liberation Day\" tariff announcement triggered a waterfall: −6% on April 4 when China retaliated, bottoming April 8 at −22.9%. The very next day, Trump's 90-day tariff pause sparked the largest point gain in NDX history (+2,054 pts, +12%). The recovery took just 52 days — another example of policy-driven crashes reversing as fast as they began.","path":[[0,0.0],[1,-0.48],[2,-2.53],[3,-3.71],[4,-4.91],[5,-4.7],[6,-7.33],[7,-5.82],[8,-7.89],[9,-8.22],[10,-6.98],[11,-9.57],[12,-8.9],[13,-12.38],[14,-12.62],[15,-11.63],[16,-13.3],[17,-11.14],[18,-10.66],[19,-12.14],[20,-11.0],[21,-11.26],[22,-10.92],[23,-9.0],[24,-8.51],[25,-10.19],[26,-10.72],[27,-13.05],[28,-13.06],[29,-12.35],[30,-11.7],[31,-16.48],[32,-21.55],[33,-21.4],[34,-22.93],[35,-13.67],[36,-17.28],[37,-15.72],[38,-15.24],[39,-15.09],[40,-17.67],[41,-17.67],[42,-19.69],[43,-17.58],[44,-15.7],[45,-13.35],[46,-12.37],[47,-12.39],[48,-11.86],[49,-11.75],[50,-10.77],[51,-9.35],[52,-9.96],[53,-10.75],[54,-10.41],[55,-9.52],[56,-9.53],[57,-5.9],[58,-4.41],[59,-3.86],[60,-3.79],[61,-3.37],[62,-3.29],[63,-3.64],[64,-4.94],[65,-4.79],[66,-5.68],[67,-3.43],[68,-3.87],[69,-3.66],[70,-3.76],[71,-3.08],[72,-2.31],[73,-2.05],[74,-2.83],[75,-1.87],[76,-1.7],[77,-1.05],[78,-1.42],[79,-1.18],[80,-2.46],[81,-1.07],[82,-2.06],[83,-2.06],[84,-2.48],[85,-1.44],[86,0.07]]},
+{"peakDate":"2006-01-11","peakVal":1758,"troughDate":"2006-07-21","troughVal":1452,"recDate":"2006-11-13","maxDD":-17.4,"daysDown":132,"daysUp":80,"totalDays":212,"troughIdx":132,"name":"2006 Growth Scare","narrative":"<strong>The forgotten correction.</strong> A slow-burn 17% decline over 6 months as the Fed pushed rates to 5.25% (17 consecutive hikes), inflation fears spiked, and tech growth stocks de-rated. No single catastrophic day — just a steady grind of selling through the spring and summer of 2006. Once the Fed paused in August, the index recovered in 80 days. A textbook mid-cycle correction.","path":[[0,0.0],[3,-1.24],[6,-4.66],[9,-4.62],[12,-2.55],[15,-4.12],[18,-6.05],[21,-5.37],[24,-4.84],[27,-5.83],[30,-4.65],[33,-3.62],[36,-5.02],[39,-6.44],[42,-4.38],[45,-4.13],[48,-4.66],[51,-4.41],[54,-2.82],[57,-2.37],[60,-2.0],[63,-3.04],[66,-1.8],[69,-2.8],[72,-3.19],[75,-4.07],[78,-3.25],[81,-2.68],[84,-6.96],[87,-9.06],[90,-9.88],[93,-9.02],[96,-10.16],[99,-10.28],[102,-11.19],[105,-13.73],[108,-11.11],[111,-10.5],[114,-11.49],[117,-9.82],[120,-11.62],[123,-13.5],[126,-15.93],[129,-16.26],[132,-17.42],[135,-15.38],[138,-14.15],[141,-14.08],[144,-15.55],[147,-15.44],[150,-10.7],[153,-11.21],[156,-11.55],[159,-10.5],[162,-9.6],[165,-11.0],[168,-8.1],[171,-7.15],[174,-6.42],[177,-6.14],[180,-5.5],[183,-6.71],[186,-4.17],[189,-3.81],[192,-1.74],[195,-2.95],[198,-2.52],[201,-2.31],[204,-2.88],[207,-1.48],[210,-1.03],[212,0.56]]},
+{"peakDate":"2015-11-03","peakVal":4719,"troughDate":"2016-02-09","troughVal":3948,"recDate":"2016-07-28","maxDD":-16.3,"daysDown":66,"daysUp":118,"totalDays":184,"troughIdx":66,"name":"Early 2016 Growth Scare","narrative":"<strong>The China devaluation panic, round two.</strong> Fears of a Chinese hard landing, collapsing oil prices (crude fell below $27), and the Fed's first hike in 9 years combined into the worst-ever start to a trading year in January 2016. The index fell 16% before Fed officials walked back rate hike expectations and oil stabilized. A choppy 118-day recovery followed — recovery took nearly twice as long as the decline.","path":[[0,0.0],[2,-0.34],[4,-1.35],[6,-1.74],[8,-4.6],[10,-3.25],[12,-1.35],[14,-0.94],[16,-0.98],[18,-1.16],[20,-0.7],[22,-0.06],[24,-0.51],[26,-1.61],[28,-3.16],[30,-1.15],[32,-4.33],[34,-2.75],[36,-2.04],[38,-0.59],[40,-2.67],[42,-4.98],[44,-8.76],[46,-9.23],[48,-11.36],[50,-12.25],[52,-12.35],[54,-9.73],[56,-10.28],[58,-11.29],[60,-9.16],[62,-11.59],[64,-14.72],[66,-16.34],[68,-16.04],[70,-13.03],[72,-12.03],[74,-10.34],[76,-10.99],[78,-10.24],[80,-8.17],[82,-8.33],[84,-8.81],[86,-9.02],[88,-7.57],[90,-7.46],[92,-6.76],[94,-6.19],[96,-6.71],[98,-6.8],[100,-4.84],[102,-3.96],[104,-5.26],[106,-5.17],[108,-5.52],[110,-3.48],[112,-3.73],[114,-3.86],[116,-3.78],[118,-5.19],[120,-6.41],[122,-8.0],[124,-8.0],[126,-8.68],[128,-8.01],[130,-7.59],[132,-8.32],[134,-8.4],[136,-8.55],[138,-7.71],[140,-5.14],[142,-4.38],[144,-4.22],[146,-4.43],[148,-4.36],[150,-4.37],[152,-6.28],[154,-6.56],[156,-7.3],[158,-6.48],[160,-5.33],[162,-10.98],[164,-7.51],[166,-5.97],[168,-5.81],[170,-4.04],[172,-3.0],[174,-2.6],[176,-2.11],[178,-1.31],[180,-1.12],[182,-0.99],[184,0.05]]},
+{"peakDate":"2011-07-22","peakVal":2430,"troughDate":"2011-08-19","troughVal":2038,"recDate":"2012-01-19","maxDD":-16.1,"daysDown":20,"daysUp":104,"totalDays":124,"troughIdx":20,"name":"US Downgrade / Euro Crisis","narrative":"<strong>The AAA downgrade shock.</strong> The debt-ceiling standoff brought the US within days of default; S&P then stripped America of its AAA rating for the first time in history. Combined with the European sovereign debt crisis threatening Italy and Spain, the index cratered 16% in just 20 days — including a 6.1% single-day plunge on August 8. The recovery took 104 choppy days, plagued by repeated Euro-crisis flare-ups through the fall of 2011.","path":[[0,0.0],[1,-0.22],[2,-0.0],[3,-2.57],[4,-2.38],[5,-2.75],[6,-3.11],[7,-5.62],[8,-4.8],[9,-9.15],[10,-9.68],[11,-15.2],[12,-11.06],[13,-14.67],[14,-10.8],[15,-10.19],[16,-8.87],[17,-9.68],[18,-10.2],[19,-14.67],[20,-16.11],[21,-15.84],[22,-12.36],[23,-11.71],[24,-13.22],[25,-11.01],[26,-8.46],[27,-7.9],[28,-7.76],[29,-8.66],[30,-10.77],[31,-10.78],[32,-8.47],[33,-8.86],[34,-10.94],[35,-9.78],[36,-8.6],[37,-7.28],[38,-5.88],[39,-5.08],[40,-4.97],[41,-5.5],[42,-7.05],[43,-10.08],[44,-9.16],[45,-8.04],[46,-7.24],[47,-8.59],[48,-9.54],[49,-11.95],[50,-14.18],[51,-12.36],[52,-10.16],[53,-8.71],[54,-9.33],[55,-6.21],[56,-5.54],[57,-5.03],[58,-4.22],[59,-2.37],[60,-3.92],[61,-2.66],[62,-4.64],[63,-5.07],[64,-3.85],[65,-1.86],[66,-3.85],[67,-3.9],[68,-1.22],[69,-1.16],[70,-2.86],[71,-5.4],[72,-4.58],[73,-2.54],[74,-3.01],[75,-2.41],[76,-1.21],[77,-4.75],[78,-4.83],[79,-3.03],[80,-3.63],[81,-2.6],[82,-4.33],[83,-6.48],[84,-7.23],[85,-8.99],[86,-8.77],[87,-10.82],[88,-11.47],[89,-8.45],[90,-8.98],[91,-5.53],[92,-4.95],[93,-5.25],[94,-4.22],[95,-4.45],[96,-4.48],[97,-6.05],[98,-4.56],[99,-5.65],[100,-6.63],[101,-8.09],[102,-8.35],[103,-7.87],[104,-8.82],[105,-6.07],[106,-7.43],[107,-6.7],[108,-5.84],[109,-5.61],[110,-6.69],[111,-5.94],[112,-6.24],[113,-4.43],[114,-4.11],[115,-3.31],[116,-3.02],[117,-3.25],[118,-2.56],[119,-2.36],[120,-1.96],[121,-2.37],[122,-1.49],[123,-0.15],[124,0.5]]},
+{"peakDate":"2015-07-20","peakVal":4680,"troughDate":"2015-08-25","troughVal":4016,"recDate":"2015-11-02","maxDD":-14.2,"daysDown":26,"daysUp":48,"totalDays":74,"troughIdx":26,"name":"China Devaluation / Flash Crash","narrative":"<strong>The yuan shock.</strong> China unexpectedly devalued the yuan in August 2015, triggering fears its economy was far weaker than reported. The selling climaxed on August 24 — a flash-crash open where the Dow fell 1,089 points in minutes and many ETFs briefly traded 30%+ below fair value. The NDX bottomed the next day at −14.2%. Once China stabilized the currency and the Fed delayed its rate hike, recovery took just 48 days.","path":[[0,0.0],[1,-0.11],[2,-1.21],[3,-1.64],[4,-2.61],[5,-3.43],[6,-2.55],[7,-2.1],[8,-1.73],[9,-1.94],[10,-2.12],[11,-2.4],[12,-1.65],[13,-3.23],[14,-3.41],[15,-2.28],[16,-3.54],[17,-3.24],[18,-3.43],[19,-3.18],[20,-2.42],[21,-2.94],[22,-3.61],[23,-6.29],[24,-10.31],[25,-13.7],[26,-14.18],[27,-9.83],[28,-7.58],[29,-7.49],[30,-8.66],[31,-11.48],[32,-9.05],[33,-9.51],[34,-10.58],[35,-8.04],[36,-9.11],[37,-8.19],[38,-7.62],[39,-7.93],[40,-6.83],[41,-6.33],[42,-6.3],[43,-7.6],[44,-7.34],[45,-8.67],[46,-8.68],[47,-8.94],[48,-9.72],[49,-12.31],[50,-12.74],[51,-10.65],[52,-10.4],[53,-8.81],[54,-7.44],[55,-7.97],[56,-7.4],[57,-7.04],[58,-6.62],[59,-6.35],[60,-6.98],[61,-7.11],[62,-5.59],[63,-5.15],[64,-4.65],[65,-5.16],[66,-5.69],[67,-3.77],[68,-1.19],[69,-1.04],[70,-0.86],[71,-0.02],[72,-0.19],[73,-0.66],[74,0.52]]},
+{"peakDate":"2024-07-10","peakVal":20675,"troughDate":"2024-08-07","troughVal":17867,"recDate":"2024-11-06","maxDD":-13.6,"daysDown":20,"daysUp":64,"totalDays":84,"troughIdx":20,"name":"Aug 2024 Yen Carry Unwind","narrative":"<strong>The carry trade blowup.</strong> The Bank of Japan's surprise rate hike detonated the massive yen carry trade — global funds that had borrowed cheap yen to buy US tech were forced to unwind simultaneously. Combined with a weak US jobs report stoking recession fears and AI-capex skepticism, the NDX fell 13.6% in 20 days, including a 3%+ plunge on August 5 when Japan's Nikkei had its worst day since 1987. Recovery took 64 days, completed the day after the US election.","path":[[0,0.0],[1,-2.24],[2,-1.66],[3,-1.4],[4,-1.34],[5,-4.24],[6,-4.69],[7,-5.58],[8,-4.12],[9,-4.45],[10,-7.95],[11,-8.92],[12,-7.99],[13,-7.82],[14,-9.09],[15,-6.35],[16,-8.63],[17,-10.81],[18,-13.45],[19,-12.56],[20,-13.58],[21,-10.94],[22,-10.46],[23,-10.32],[24,-8.07],[25,-7.99],[26,-5.73],[27,-5.64],[28,-4.4],[29,-4.62],[30,-4.11],[31,-5.72],[32,-4.62],[33,-5.61],[34,-5.29],[35,-6.41],[36,-6.53],[37,-5.32],[38,-8.3],[39,-8.48],[40,-8.44],[41,-10.9],[42,-9.74],[43,-8.93],[44,-6.96],[45,-6.06],[46,-5.61],[47,-6.06],[48,-6.01],[49,-6.44],[50,-4.04],[51,-4.28],[52,-3.98],[53,-3.53],[54,-3.4],[55,-2.71],[56,-3.22],[57,-2.97],[58,-4.36],[59,-4.22],[60,-4.27],[61,-3.1],[62,-4.23],[63,-2.75],[64,-1.97],[65,-2.1],[66,-1.95],[67,-1.14],[68,-2.49],[69,-2.42],[70,-2.35],[71,-1.7],[72,-1.52],[73,-1.41],[74,-2.94],[75,-2.14],[76,-1.56],[77,-1.57],[78,-0.6],[79,-1.39],[80,-3.8],[81,-3.11],[82,-3.44],[83,-2.17],[84,0.51]]}];
 
-// ── NATIVE CANVAS CHART ───────────────────────────────────────────────────────
-const canvas = document.getElementById('ndxChart');
-const ctx = canvas.getContext('2d');
-const PAD = {top:16, right:16, bottom:32, left:52};
-let W, H, chartW, chartH, minV, maxV, scaleX, scaleY;
-
-function resize() {
-  const wrap = canvas.parentElement;
-  W = wrap.clientWidth;
-  H = wrap.clientHeight;
-  canvas.width = W * devicePixelRatio;
-  canvas.height = H * devicePixelRatio;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(devicePixelRatio, devicePixelRatio);
-  chartW = W - PAD.left - PAD.right;
-  chartH = H - PAD.top - PAD.bottom;
-  minV = Math.min(...MV) * 0.97;
-  maxV = Math.max(...MV) * 1.02;
-  scaleX = i => PAD.left + (i / (ML.length - 1)) * chartW;
-  scaleY = v => PAD.top + (1 - (v - minV) / (maxV - minV)) * chartH;
-  draw();
-}
-
-function draw(hoverIdx) {
-  ctx.clearRect(0, 0, W, H);
-
-  // grid lines
-  const ticks = [5000,10000,15000,20000,25000];
-  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-  ctx.lineWidth = 1;
-  ticks.forEach(t => {
-    if (t < minV || t > maxV) return;
-    const y = scaleY(t);
-    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
-    ctx.fillStyle = '#555e72';
-    ctx.font = '9px Courier New,monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText((t/1000).toFixed(0)+'k', PAD.left - 6, y + 3);
-  });
-
-  // year labels
-  ctx.fillStyle = '#555e72';
-  ctx.font = '9px Courier New,monospace';
-  ctx.textAlign = 'center';
-  const step = W < 500 ? 24 : 12;
-  ML.forEach((l, i) => {
-    if (l.endsWith('-01') && i % step === 0) {
-      ctx.fillText(l.split('-')[0], scaleX(i), H - 6);
-    }
-  });
-
-  // gradient fill
-  const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + chartH);
-  grad.addColorStop(0, 'rgba(61,155,255,0.18)');
-  grad.addColorStop(1, 'rgba(61,155,255,0)');
-  ctx.beginPath();
-  MV.forEach((v, i) => i === 0 ? ctx.moveTo(scaleX(i), scaleY(v)) : ctx.lineTo(scaleX(i), scaleY(v)));
-  ctx.lineTo(scaleX(MV.length-1), PAD.top + chartH);
-  ctx.lineTo(scaleX(0), PAD.top + chartH);
-  ctx.closePath();
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  // line
-  ctx.beginPath();
-  ctx.strokeStyle = '#3d9bff';
-  ctx.lineWidth = 1.5;
-  ctx.lineJoin = 'round';
-  MV.forEach((v, i) => i === 0 ? ctx.moveTo(scaleX(i), scaleY(v)) : ctx.lineTo(scaleX(i), scaleY(v)));
-  ctx.stroke();
-
-  // event markers
-  allEvents.forEach(ev => {
-    const i = ML.indexOf(ev.month);
-    if (i < 0) return;
-    const x = scaleX(i), y = scaleY(MV[i]);
-    const color = ev.type === 'gain' ? '#22c97a' : '#f04a5a';
-    // dashed vertical
-    ctx.save();
-    ctx.setLineDash([3,4]);
-    ctx.strokeStyle = color; ctx.globalAlpha = 0.28; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, PAD.top + chartH); ctx.stroke();
-    ctx.setLineDash([]);
-    // glow
-    ctx.globalAlpha = 0.14; ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI*2); ctx.fill();
-    // dot
-    ctx.globalAlpha = 1; ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI*2); ctx.fill();
-    // rank number
-    ctx.fillStyle = '#0a0c10';
-    ctx.font = '600 7px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(ev.rank, x, y);
-    ctx.restore();
-  });
-
-  // hover crosshair
-  if (hoverIdx !== undefined) {
-    const x = scaleX(hoverIdx);
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 1; ctx.setLineDash([4,4]);
-    ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, PAD.top + chartH); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#3d9bff';
-    ctx.beginPath(); ctx.arc(x, scaleY(MV[hoverIdx]), 4, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-}
-
-// ── TOOLTIP LOGIC ─────────────────────────────────────────────────────────────
 const isMobile = () => window.innerWidth < 640;
 
-function getIdx(clientX) {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = clientX - rect.left;
-  const i = Math.round((mouseX - PAD.left) / chartW * (ML.length - 1));
-  return Math.max(0, Math.min(ML.length - 1, i));
+// ═══ VIEW SWITCHING ═══════════════════════════════════════════════════════════
+function switchView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'overview') setTimeout(initMain, 50);
+  if (name === 'drawdowns') setTimeout(() => selectDD(currentDD), 50);
 }
 
-function showTooltip(clientX) {
-  const idx = getIdx(clientX);
-  const label = ML[idx], val = MV[idx];
-  const prev = idx > 0 ? MV[idx-1] : val;
-  const chg = ((val - prev) / prev * 100).toFixed(1);
-  const match = allEvents.find(e => e.month === label);
-  draw(idx);
+// ═══ MAIN CHART (native canvas) ═══════════════════════════════════════════════
+const mainCanvas = document.getElementById('mainChart');
+const mCtx = mainCanvas.getContext('2d');
+const MPAD = {top:16, right:16, bottom:30, left:50};
+let mW, mH, mCW, mCH, mMin, mMax;
 
-  if (isMobile()) {
-    const tt = document.getElementById('touchTooltip');
-    tt.classList.add('visible');
-    document.getElementById('ttDateM').textContent = label;
-    document.getElementById('ttValM').textContent = val.toLocaleString(undefined,{maximumFractionDigits:0});
-    const chgEl = document.getElementById('ttChgM');
-    chgEl.textContent = (chg>=0?'+':'')+chg+'% MoM';
-    chgEl.className = 'tt-chg-m '+(chg>=0?'pos':'neg');
-    const evEl = document.getElementById('ttEventM');
-    if (match) { evEl.textContent=(match.type==='gain'?'▲ ':'▼ ')+match.pct+'% — '+match.catalyst; evEl.style.display='block'; evEl.style.color=match.type==='gain'?'#22c97a':'#f04a5a'; }
-    else evEl.style.display='none';
-  } else {
-    const tt = document.getElementById('tooltip');
-    document.getElementById('ttDate').textContent = label;
-    document.getElementById('ttVal').textContent = val.toLocaleString(undefined,{maximumFractionDigits:0});
-    const chgEl = document.getElementById('ttChg');
-    chgEl.textContent = (chg>=0?'+':'')+chg+'% MoM';
-    chgEl.className = 'tt-chg '+(chg>=0?'pos':'neg');
-    const evEl = document.getElementById('ttEvent');
-    if (match) { evEl.textContent=(match.type==='gain'?'▲ ':'▼ ')+match.pct+'% — '+match.catalyst.substring(0,55)+'…'; evEl.style.display='block'; evEl.style.color=match.type==='gain'?'#22c97a':'#f04a5a'; }
-    else evEl.style.display='none';
-    const rect = canvas.getBoundingClientRect();
-    const x = scaleX(idx);
-    const ttW = 220;
-    let left = x + 14; if (left + ttW > W) left = x - ttW - 14;
-    tt.style.left = left+'px';
-    tt.style.top = Math.max(8, scaleY(val) - 40)+'px';
-    tt.style.opacity = 1;
+const msx = i => MPAD.left + (i/(ML.length-1)) * mCW;
+const msy = v => MPAD.top + (1-(v-mMin)/(mMax-mMin)) * mCH;
+
+function initMain(hoverIdx) {
+  const wrap = mainCanvas.parentElement;
+  mW = wrap.clientWidth; mH = wrap.clientHeight;
+  mainCanvas.width = mW * devicePixelRatio;
+  mainCanvas.height = mH * devicePixelRatio;
+  mainCanvas.style.width = mW+'px'; mainCanvas.style.height = mH+'px';
+  mCtx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  mCW = mW - MPAD.left - MPAD.right;
+  mCH = mH - MPAD.top - MPAD.bottom;
+  mMin = Math.min(...MV)*0.97; mMax = Math.max(...MV)*1.02;
+  drawMain(hoverIdx);
+}
+
+function drawMain(hoverIdx) {
+  mCtx.clearRect(0,0,mW,mH);
+  // grid
+  [5000,10000,15000,20000,25000].forEach(t => {
+    if (t<mMin||t>mMax) return;
+    const y = msy(t);
+    mCtx.strokeStyle='rgba(20,30,50,0.05)'; mCtx.lineWidth=1;
+    mCtx.beginPath(); mCtx.moveTo(MPAD.left,y); mCtx.lineTo(mW-MPAD.right,y); mCtx.stroke();
+    mCtx.fillStyle='#98a1b3'; mCtx.font='700 9px Courier New,monospace'; mCtx.textAlign='right';
+    mCtx.fillText((t/1000)+'k', MPAD.left-6, y+3);
+  });
+  // year labels
+  mCtx.fillStyle='#98a1b3'; mCtx.font='700 9px Courier New,monospace'; mCtx.textAlign='center';
+  const step = mW<500?36:24;
+  ML.forEach((l,i)=>{ if(l.endsWith('-01') && i%step===0) mCtx.fillText(l.split('-')[0], msx(i), mH-6); });
+  // gradient
+  const grad = mCtx.createLinearGradient(0,MPAD.top,0,MPAD.top+mCH);
+  grad.addColorStop(0,'rgba(36,114,200,0.14)'); grad.addColorStop(1,'rgba(36,114,200,0)');
+  mCtx.beginPath();
+  MV.forEach((v,i)=> i===0?mCtx.moveTo(msx(i),msy(v)):mCtx.lineTo(msx(i),msy(v)));
+  mCtx.lineTo(msx(MV.length-1),MPAD.top+mCH); mCtx.lineTo(msx(0),MPAD.top+mCH); mCtx.closePath();
+  mCtx.fillStyle=grad; mCtx.fill();
+  // line
+  mCtx.beginPath(); mCtx.strokeStyle='#2472c8'; mCtx.lineWidth=1.8; mCtx.lineJoin='round';
+  MV.forEach((v,i)=> i===0?mCtx.moveTo(msx(i),msy(v)):mCtx.lineTo(msx(i),msy(v)));
+  mCtx.stroke();
+  // drop markers
+  drops.forEach(d => {
+    const i = ML.indexOf(d.month);
+    if (i<0) return;
+    const x = msx(i), y = msy(MV[i]);
+    mCtx.save();
+    mCtx.setLineDash([3,4]); mCtx.strokeStyle='#d64550'; mCtx.globalAlpha=.3; mCtx.lineWidth=1;
+    mCtx.beginPath(); mCtx.moveTo(x,MPAD.top); mCtx.lineTo(x,MPAD.top+mCH); mCtx.stroke();
+    mCtx.setLineDash([]);
+    mCtx.globalAlpha=.13; mCtx.fillStyle='#d64550';
+    mCtx.beginPath(); mCtx.arc(x,y,9,0,Math.PI*2); mCtx.fill();
+    mCtx.globalAlpha=1;
+    mCtx.beginPath(); mCtx.arc(x,y,5.5,0,Math.PI*2); mCtx.fill();
+    mCtx.fillStyle='#fff'; mCtx.font='700 7px sans-serif'; mCtx.textAlign='center'; mCtx.textBaseline='middle';
+    mCtx.fillText(d.rank, x, y);
+    mCtx.restore();
+  });
+  // crosshair
+  if (hoverIdx !== undefined) {
+    const x = msx(hoverIdx);
+    mCtx.save();
+    mCtx.strokeStyle='rgba(20,30,50,0.25)'; mCtx.lineWidth=1; mCtx.setLineDash([4,4]);
+    mCtx.beginPath(); mCtx.moveTo(x,MPAD.top); mCtx.lineTo(x,MPAD.top+mCH); mCtx.stroke();
+    mCtx.setLineDash([]);
+    mCtx.fillStyle='#2472c8'; mCtx.beginPath(); mCtx.arc(x,msy(MV[hoverIdx]),4.5,0,Math.PI*2); mCtx.fill();
+    mCtx.strokeStyle='#fff'; mCtx.lineWidth=1.5; mCtx.stroke();
+    mCtx.restore();
   }
 }
 
-canvas.addEventListener('mousemove', e => showTooltip(e.clientX));
-canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.opacity=0; draw(); });
-canvas.addEventListener('touchstart', e => { e.preventDefault(); showTooltip(e.touches[0].clientX); }, {passive:false});
-canvas.addEventListener('touchmove', e => { e.preventDefault(); showTooltip(e.touches[0].clientX); }, {passive:false});
+function mainHover(clientX) {
+  const rect = mainCanvas.getBoundingClientRect();
+  const mx = clientX - rect.left;
+  const idx = Math.max(0, Math.min(ML.length-1, Math.round((mx-MPAD.left)/mCW*(ML.length-1))));
+  drawMain(idx);
+  const label = ML[idx], val = MV[idx];
+  const prev = idx>0?MV[idx-1]:val;
+  const chg = ((val-prev)/prev*100).toFixed(1);
+  const dropMatch = drops.find(d => d.month === label);
 
-window.addEventListener('resize', () => { ctx.resetTransform(); resize(); });
-resize();
+  if (isMobile()) {
+    const info = document.getElementById('mainInfo');
+    info.classList.add('visible');
+    document.getElementById('miDate').textContent = label;
+    document.getElementById('miVal').textContent = val.toLocaleString(undefined,{maximumFractionDigits:0});
+    const c = document.getElementById('miChg');
+    c.textContent = (chg>=0?'+':'')+chg+'% MoM';
+    c.className = 'is-chg '+(chg>=0?'pos':'neg');
+    const ev = document.getElementById('miEvent');
+    if (dropMatch) { ev.textContent = '▼ '+dropMatch.pct+'% on '+dropMatch.date+' — '+dropMatch.catalyst; ev.style.display='block'; }
+    else ev.style.display='none';
+  } else {
+    const tip = document.getElementById('mainTip');
+    document.getElementById('mtDate').textContent = label;
+    document.getElementById('mtVal').textContent = val.toLocaleString(undefined,{maximumFractionDigits:0});
+    const c = document.getElementById('mtChg');
+    c.textContent = (chg>=0?'+':'')+chg+'% MoM';
+    c.className = 'tip-sub '+(chg>=0?'pos':'neg');
+    const ev = document.getElementById('mtEvent');
+    if (dropMatch) { ev.textContent='▼ '+dropMatch.pct+'% — '+dropMatch.catalyst.substring(0,52)+'…'; ev.style.display='block'; }
+    else ev.style.display='none';
+    const x = msx(idx), ttW = 230;
+    let left = x+14; if (left+ttW > mW) left = x-ttW-14;
+    tip.style.left = left+'px';
+    tip.style.top = Math.max(6, msy(val)-45)+'px';
+    tip.style.opacity = 1;
+  }
+}
 
-// ── CARDS ─────────────────────────────────────────────────────────────────────
-const sortedCards = [...topGains.map(e=>({...e,type:'gain'})),...topLosses.map(e=>({...e,type:'loss'}))]
-  .sort((a,b) => Math.abs(parseFloat(b.pct.replace('−','-'))) - Math.abs(parseFloat(a.pct.replace('−','-'))));
+mainCanvas.addEventListener('mousemove', e => mainHover(e.clientX));
+mainCanvas.addEventListener('mouseleave', () => { document.getElementById('mainTip').style.opacity=0; drawMain(); });
+mainCanvas.addEventListener('touchstart', e => mainHover(e.touches[0].clientX), {passive:true});
+mainCanvas.addEventListener('touchmove', e => mainHover(e.touches[0].clientX), {passive:true});
 
-function renderCards(filter) {
-  const grid = document.getElementById('cardsGrid');
-  grid.innerHTML = '';
-  const items = filter==='all' ? sortedCards : sortedCards.filter(e=>e.type===filter);
-  items.forEach((e, i) => {
-    const div = document.createElement('div');
-    div.className = 'event-card '+e.type;
-    div.style.animationDelay = (i*0.04)+'s';
-    div.innerHTML = `
-      <div class="card-rank ${e.type}">${e.rank}</div>
-      <div class="card-top">
-        <div class="card-date">${e.date}</div>
-        <span class="card-era ${e.type}">${e.era}</span>
+// ═══ DROPS LIST ═══════════════════════════════════════════════════════════════
+function renderDrops() {
+  const list = document.getElementById('dropsList');
+  drops.forEach((d,i) => {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div class="drop-row" onclick="toggleDrop(this)">
+        <div class="drop-rank">${d.rank}</div>
+        <div class="drop-main">
+          <div class="drop-date">${d.date} · ${d.era}</div>
+          <div class="drop-catalyst">${d.catalyst}</div>
+        </div>
+        <div class="drop-pct">${d.pct}%</div>
+        <svg class="chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <div class="card-move ${e.type}">${e.pct}%</div>
-      <div class="card-pts">${e.pts} pts &nbsp;·&nbsp; Close: ${e.close.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-      <div class="card-catalyst">${e.catalyst}</div>
-      <div class="card-detail">${e.detail}</div>
-    `;
-    if (!isMobile()) {
-      div.addEventListener('mouseenter', () => {
-        const idx = ML.indexOf(e.month);
-        if (idx >= 0) draw(idx);
-      });
-      div.addEventListener('mouseleave', () => draw());
-    }
-    grid.appendChild(div);
+      <div class="drop-detail">
+        ${d.detail}
+        <div class="drop-meta">POINTS: ${d.pts} &nbsp;·&nbsp; CLOSE: ${d.close}</div>
+      </div>`;
+    list.appendChild(wrap);
+  });
+}
+function toggleDrop(row) {
+  const detail = row.nextElementSibling;
+  const isOpen = detail.classList.contains('open');
+  document.querySelectorAll('.drop-detail').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.drop-row').forEach(r => r.classList.remove('expanded'));
+  if (!isOpen) { detail.classList.add('open'); row.classList.add('expanded'); }
+}
+renderDrops();
+
+// ═══ DRAWDOWN VIEW ════════════════════════════════════════════════════════════
+let currentDD = 0;
+const ddCanvas = document.getElementById('ddChart');
+const dCtx = ddCanvas.getContext('2d');
+const DPAD = {top:16, right:16, bottom:30, left:44};
+let dW, dH, dCW, dCH;
+
+function renderDDSelector() {
+  const sel = document.getElementById('ddSelector');
+  dds.forEach((d,i) => {
+    const chip = document.createElement('div');
+    chip.className = 'dd-chip'+(i===0?' active':'');
+    chip.onclick = () => selectDD(i);
+    chip.innerHTML = `
+      <div class="dd-chip-dd">${d.maxDD}%</div>
+      <div class="dd-chip-label">${d.name}</div>
+      <div class="dd-chip-year">${d.peakDate.substring(0,4)}</div>`;
+    sel.appendChild(chip);
   });
 }
 
-function filterCards(filter, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.className='tab');
-  if (filter==='gain') btn.className='tab active-gain';
-  else if (filter==='loss') btn.className='tab active-loss';
-  else btn.className='tab active-all';
-  renderCards(filter);
+function selectDD(i) {
+  currentDD = i;
+  document.querySelectorAll('.dd-chip').forEach((c,j) => c.classList.toggle('active', j===i));
+  const d = dds[i];
+  document.getElementById('ddChartTitle').textContent = d.name + ' · % from peak';
+  document.getElementById('ddStats').innerHTML = `
+    <div class="dd-stat"><div class="dd-stat-label">Peak</div><div class="dd-stat-val">${d.peakDate}<br><span style="font-size:11px;color:var(--text3)">${d.peakVal.toLocaleString()}</span></div></div>
+    <div class="dd-stat"><div class="dd-stat-label">Trough</div><div class="dd-stat-val neg">${d.troughDate}<br><span style="font-size:11px;color:var(--text3)">${d.troughVal.toLocaleString()}</span></div></div>
+    <div class="dd-stat"><div class="dd-stat-label">Max Drawdown</div><div class="dd-stat-val neg">${d.maxDD}%</div></div>
+    <div class="dd-stat"><div class="dd-stat-label">Days to Bottom</div><div class="dd-stat-val">${d.daysDown} <span style="font-size:10px;color:var(--text3)">trading</span></div></div>
+    <div class="dd-stat"><div class="dd-stat-label">Days to Recover</div><div class="dd-stat-val pos">${d.daysUp} <span style="font-size:10px;color:var(--text3)">trading</span></div></div>`;
+  document.getElementById('ddNarrative').innerHTML = d.narrative;
+  initDDChart();
 }
 
-renderCards('all');
+function initDDChart(hoverI) {
+  const wrap = ddCanvas.parentElement;
+  dW = wrap.clientWidth; dH = wrap.clientHeight;
+  ddCanvas.width = dW*devicePixelRatio; ddCanvas.height = dH*devicePixelRatio;
+  ddCanvas.style.width = dW+'px'; ddCanvas.style.height = dH+'px';
+  dCtx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  dCW = dW-DPAD.left-DPAD.right; dCH = dH-DPAD.top-DPAD.bottom;
+  drawDD(hoverI);
+}
+
+function drawDD(hoverI) {
+  const d = dds[currentDD];
+  const path = d.path;
+  const maxDay = d.totalDays;
+  const minP = Math.min(...path.map(p=>p[1]))*1.1;
+  const maxP = 3;
+  const dsx = day => DPAD.left + (day/maxDay)*dCW;
+  const dsy = p => DPAD.top + (1-(p-minP)/(maxP-minP))*dCH;
+
+  dCtx.clearRect(0,0,dW,dH);
+
+  // zero line
+  dCtx.strokeStyle='rgba(20,30,50,0.15)'; dCtx.lineWidth=1; dCtx.setLineDash([2,3]);
+  dCtx.beginPath(); dCtx.moveTo(DPAD.left,dsy(0)); dCtx.lineTo(dW-DPAD.right,dsy(0)); dCtx.stroke();
+  dCtx.setLineDash([]);
+  dCtx.fillStyle='#98a1b3'; dCtx.font='700 9px Courier New,monospace'; dCtx.textAlign='right';
+  dCtx.fillText('0%', DPAD.left-6, dsy(0)+3);
+
+  // grid lines
+  const gridStep = minP < -40 ? 10 : 5;
+  for (let g=-gridStep; g>minP; g-=gridStep) {
+    const y = dsy(g);
+    dCtx.strokeStyle='rgba(20,30,50,0.05)'; dCtx.beginPath();
+    dCtx.moveTo(DPAD.left,y); dCtx.lineTo(dW-DPAD.right,y); dCtx.stroke();
+    dCtx.fillStyle='#98a1b3'; dCtx.textAlign='right';
+    dCtx.fillText(g+'%', DPAD.left-6, y+3);
+  }
+
+  // day labels
+  dCtx.fillStyle='#98a1b3'; dCtx.textAlign='center';
+  const dayStep = maxDay > 400 ? 200 : maxDay > 150 ? 50 : 20;
+  for (let day=0; day<=maxDay; day+=dayStep) dCtx.fillText('d'+day, dsx(day), dH-6);
+
+  // decline segment (peak to trough) - red
+  const troughPathIdx = path.findIndex(p => p[0] === d.troughIdx);
+  const declinePath = path.slice(0, troughPathIdx+1);
+  const recoveryPath = path.slice(troughPathIdx);
+
+  // decline fill
+  const gradR = dCtx.createLinearGradient(0,DPAD.top,0,DPAD.top+dCH);
+  gradR.addColorStop(0,'rgba(214,69,80,0.02)'); gradR.addColorStop(1,'rgba(214,69,80,0.14)');
+  dCtx.beginPath();
+  declinePath.forEach((p,i)=> i===0?dCtx.moveTo(dsx(p[0]),dsy(p[1])):dCtx.lineTo(dsx(p[0]),dsy(p[1])));
+  dCtx.lineTo(dsx(declinePath[declinePath.length-1][0]), dsy(0));
+  dCtx.lineTo(dsx(0), dsy(0)); dCtx.closePath();
+  dCtx.fillStyle=gradR; dCtx.fill();
+
+  // recovery fill
+  const gradG = dCtx.createLinearGradient(0,DPAD.top,0,DPAD.top+dCH);
+  gradG.addColorStop(0,'rgba(15,153,96,0.02)'); gradG.addColorStop(1,'rgba(15,153,96,0.12)');
+  dCtx.beginPath();
+  recoveryPath.forEach((p,i)=> i===0?dCtx.moveTo(dsx(p[0]),dsy(p[1])):dCtx.lineTo(dsx(p[0]),dsy(p[1])));
+  dCtx.lineTo(dsx(recoveryPath[recoveryPath.length-1][0]), dsy(0));
+  dCtx.lineTo(dsx(recoveryPath[0][0]), dsy(0)); dCtx.closePath();
+  dCtx.fillStyle=gradG; dCtx.fill();
+
+  // decline line
+  dCtx.beginPath(); dCtx.strokeStyle='#d64550'; dCtx.lineWidth=2; dCtx.lineJoin='round';
+  declinePath.forEach((p,i)=> i===0?dCtx.moveTo(dsx(p[0]),dsy(p[1])):dCtx.lineTo(dsx(p[0]),dsy(p[1])));
+  dCtx.stroke();
+  // recovery line
+  dCtx.beginPath(); dCtx.strokeStyle='#0f9960'; dCtx.lineWidth=2;
+  recoveryPath.forEach((p,i)=> i===0?dCtx.moveTo(dsx(p[0]),dsy(p[1])):dCtx.lineTo(dsx(p[0]),dsy(p[1])));
+  dCtx.stroke();
+
+  // trough marker
+  const tp = path[troughPathIdx];
+  dCtx.fillStyle='#d64550';
+  dCtx.beginPath(); dCtx.arc(dsx(tp[0]),dsy(tp[1]),6,0,Math.PI*2); dCtx.fill();
+  dCtx.strokeStyle='#fff'; dCtx.lineWidth=2; dCtx.stroke();
+  // trough label
+  dCtx.fillStyle='#d64550'; dCtx.font='700 10px Courier New,monospace'; dCtx.textAlign='center';
+  dCtx.fillText(d.maxDD+'%', dsx(tp[0]), dsy(tp[1])+20);
+
+  // hover
+  if (hoverI !== undefined && path[hoverI]) {
+    const hp = path[hoverI];
+    dCtx.save();
+    dCtx.strokeStyle='rgba(20,30,50,0.25)'; dCtx.lineWidth=1; dCtx.setLineDash([4,4]);
+    dCtx.beginPath(); dCtx.moveTo(dsx(hp[0]),DPAD.top); dCtx.lineTo(dsx(hp[0]),DPAD.top+dCH); dCtx.stroke();
+    dCtx.setLineDash([]);
+    dCtx.fillStyle = hp[0] <= d.troughIdx ? '#d64550' : '#0f9960';
+    dCtx.beginPath(); dCtx.arc(dsx(hp[0]),dsy(hp[1]),4.5,0,Math.PI*2); dCtx.fill();
+    dCtx.strokeStyle='#fff'; dCtx.lineWidth=1.5; dCtx.stroke();
+    dCtx.restore();
+  }
+}
+
+function ddHover(clientX) {
+  const d = dds[currentDD];
+  const rect = ddCanvas.getBoundingClientRect();
+  const mx = clientX - rect.left;
+  const day = (mx - DPAD.left)/dCW * d.totalDays;
+  // find nearest path point
+  let best = 0, bd = Infinity;
+  d.path.forEach((p,i) => { const dist = Math.abs(p[0]-day); if (dist<bd){bd=dist;best=i;} });
+  drawDD(best);
+  const p = d.path[best];
+  const phase = p[0] <= d.troughIdx ? 'DECLINE' : 'RECOVERY';
+
+  if (isMobile()) {
+    const info = document.getElementById('ddInfo');
+    info.classList.add('visible');
+    document.getElementById('diDay').textContent = 'Day '+p[0]+' · '+phase;
+    const v = document.getElementById('diPct');
+    v.textContent = p[1]+'% from peak';
+    v.style.color = p[0] <= d.troughIdx ? 'var(--red)' : 'var(--green)';
+  } else {
+    const tip = document.getElementById('ddTip');
+    document.getElementById('dtDay').textContent = 'Trading day '+p[0]+' · '+phase;
+    const v = document.getElementById('dtPct');
+    v.textContent = p[1]+'%';
+    v.style.color = p[0] <= d.troughIdx ? '#ff8a93' : '#5ee0a8';
+    const maxDay = d.totalDays;
+    const x = DPAD.left + (p[0]/maxDay)*dCW;
+    let left = x+14; if (left+200 > dW) left = x-214;
+    tip.style.left = left+'px';
+    tip.style.top = '10px';
+    tip.style.opacity = 1;
+  }
+}
+
+ddCanvas.addEventListener('mousemove', e => ddHover(e.clientX));
+ddCanvas.addEventListener('mouseleave', () => { document.getElementById('ddTip').style.opacity=0; drawDD(); });
+ddCanvas.addEventListener('touchstart', e => ddHover(e.touches[0].clientX), {passive:true});
+ddCanvas.addEventListener('touchmove', e => ddHover(e.touches[0].clientX), {passive:true});
+
+renderDDSelector();
+selectDD(0);
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('view-overview').classList.contains('active')) initMain();
+  if (document.getElementById('view-drawdowns').classList.contains('active')) initDDChart();
+});
+
+initMain();
 </script>
 </body>
 </html>
